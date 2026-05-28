@@ -76,12 +76,6 @@ app/
   index.html    structure de l'application
   styles.css    styles et animations
   fan.svg       icône du ventilateur du header
-
-application/
-  specs_app_brasseur.md   spécification consolidée du comportement attendu
-
-brasse_rapport_4_1_regles_calepinage_2023_0_1.pdf
-BRASSE_II_synthèse_2025.pdf
 ```
 
 ## Références et crédits
