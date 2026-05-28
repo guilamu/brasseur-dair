@@ -1,6 +1,6 @@
 # Brasseur d'Air
 
-Application web statique de dimensionnement et de placement de brasseurs d'air plafonniers, basée sur une lecture opérationnelle des publications ADEME du programme BRASSE.
+[Application web statique de dimensionnement et de placement de brasseurs d'air plafonniers, basée sur une lecture opérationnelle des publications ADEME du programme BRASSE.](https://github.com/guilamu/brasseur-dair)
 
 L'objectif du projet est de proposer un outil simple, pédagogique et directement exploitable pour estimer un calepinage cohérent, visualiser les contraintes principales et comparer un choix théorique avec les diamètres disponibles sur le marché.
 
@@ -126,8 +126,6 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 
 ### [0.9] - 2026-05-28
 
-#### Ajouté
-
 - Première version publiable de l'application web statique `Brasseur d'Air`.
 - Interface de saisie en temps réel pour les dimensions, l'usage, le mode de couverture et le diamètre manuel optionnel.
 - Algorithme de dimensionnement basé sur les règles de calepinage BRASSE et les données exploitées depuis BRASSE II.
@@ -143,17 +141,7 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 - Footer de crédits avec liens vers les publications ADEME BRASSE et BRASSE II.
 - Header documenté, avec lien interne vers les crédits du footer.
 
-#### Documentation
-
-- Ajout d'un `README.md` complet pour préparer la publication GitHub.
-- Intégration du changelog initial directement dans ce `README`.
-
 #### Notes
 
 - Cette version est une implémentation indépendante fondée sur des travaux publics ADEME / BRASSE.
 - Elle doit être considérée comme un outil d'aide et non comme une validation de conception définitive.
-
-## Fichiers du dépôt
-
-- [README.md](README.md) : présentation du projet, crédits, licence et historique.
-- [LICENSE](LICENSE) : texte complet de la GNU AGPL v3.
