@@ -868,6 +868,50 @@ canvas {
     text-decoration: underline;
 }
 
+.footer-project-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.1rem;
+    margin: 0.95rem 0 0.55rem;
+}
+
+.footer-version,
+.footer-github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.footer-version {
+    color: var(--text-secondary);
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.footer-github-link {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.footer-github-link:hover,
+.footer-github-link:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.footer-github-link svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
 #app-footer .disclaimer {
     margin-top: 0.25rem;
     font-style: italic;
