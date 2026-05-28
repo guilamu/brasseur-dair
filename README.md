@@ -1,6 +1,6 @@
 # Brasseur d'Air
 
-[Application web statique de dimensionnement et de placement de brasseurs d'air plafonniers, basée sur une lecture opérationnelle des publications ADEME du programme BRASSE.](https://github.com/guilamu/brasseur-dair)
+[Application web statique de dimensionnement et de placement de brasseurs d'air plafonniers, basée sur une lecture opérationnelle des publications ADEME du programme BRASSE.]([https://github.com/guilamu/brasseur-dair](https://guilamu.github.io/brasseur-dair/))
 
 L'objectif du projet est de proposer un outil simple, pédagogique et directement exploitable pour estimer un calepinage cohérent, visualiser les contraintes principales et comparer un choix théorique avec les diamètres disponibles sur le marché.
 
