@@ -130,7 +130,7 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 
 ## Historique
 
-### [1.00] - 2026-05-28
+### [0.9] - 2026-05-28
 
 #### Ajouté
 
