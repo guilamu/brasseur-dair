@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRASSE — Placement de brasseurs d'air</title>
+    <meta name="description" content="Outil de dimensionnement et placement optimal de brasseurs d'air plafonniers selon les règles BRASSE.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="app-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <img src="fan.svg" alt="Brasseur d'air" width="48" height="48">
+                </div>
+                <div>
+                    <h1>Brasseur d'Air</h1>
+                    <a href="#app-footer" class="subtitle subtitle-link">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <!-- Input Panel -->
+        <section id="input-panel" class="panel">
+            <div class="panel-header">
+                <h2>
+                    <span class="panel-icon">📐</span>
+                    Paramètres
+                </h2>
+            </div>
+            <form id="calc-form" autocomplete="off">
+                <!-- Room dimensions -->
+                <fieldset class="input-group">
+                    <legend>Dimensions de la pièce</legend>
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label for="room-length">Longueur</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="room-length" min="1" max="50" step="0.01" value="5" required>
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="room-width">Largeur</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="room-width" min="1" max="50" step="0.01" value="4" required>
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-field full-width">
+                            <label for="room-height">Hauteur sous plafond</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="room-height" min="2" max="20" step="0.01" value="2.50" required>
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Usage -->
+                <fieldset class="input-group">
+                    <legend>Usage de la pièce</legend>
+                    <div class="input-field">
+                        <label for="room-usage">Type d'activité</label>
+                        <div class="select-wrapper">
+                            <select id="room-usage">
+                                <option value="chambre">🛏️ Chambre / Repos</option>
+                                <option value="sejour" selected>🛋️ Séjour / Activités douces</option>
+                                <option value="bureau">💼 Bureau / Tertiaire</option>
+                                <option value="scolaire">🏫 Scolaire / Enseignement</option>
+                                <option value="sport">🏃 Sport / Activités soutenues</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="input-group">
+                    <legend>Mode de couverture</legend>
+                    <div class="input-field">
+                        <label for="coverage-mode">Stratégie de brassage</label>
+                        <div class="select-wrapper">
+                            <select id="coverage-mode">
+                                <option value="uniform" selected>Couverture uniforme de la pièce</option>
+                                <option value="bed-wall">Zone de couchage contre un mur</option>
+                            </select>
+                        </div>
+                        <p id="coverage-mode-hint" class="input-hint">Le mode local applique une zone type de 2,5 × 2,5 m contre un mur avec un seul ventilateur.</p>
+                    </div>
+                </fieldset>
+
+                <!-- Fan diameter -->
+                <fieldset class="input-group">
+                    <legend>Brasseur d'air <span class="optional-tag">optionnel</span></legend>
+                    <div class="input-field">
+                        <label for="fan-diameter">Diamètre du brasseur</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="fan-diameter" min="40" max="300" step="1" placeholder="Auto">
+                            <span class="unit">cm</span>
+                        </div>
+                        <p class="input-hint">Laissez vide pour un calcul automatique</p>
+                    </div>
+                </fieldset>
+
+            </form>
+
+            <!-- Usage info card -->
+            <div id="usage-info" class="info-card">
+                <h3 id="usage-info-title">Séjour / Activités douces</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Vitesse d'air cible</span>
+                        <span class="info-value" id="usage-v-target">0,6 – 0,8 m/s</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Bruit max acceptable</span>
+                        <span class="info-value" id="usage-dba-target">24 – 34 dBA</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Métabolisme</span>
+                        <span class="info-value" id="usage-met">1,1 met</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section id="results-panel" class="panel">
+            <div class="panel-header">
+                <h2>
+                    <span class="panel-icon">📊</span>
+                    Résultats
+                </h2>
+            </div>
+
+            <!-- Placeholder when no results -->
+            <div id="results-placeholder" class="placeholder-message">
+                <div class="placeholder-icon">🌀</div>
+                <p>Renseignez les dimensions de votre pièce pour voir le placement optimal se mettre à jour automatiquement.</p>
+            </div>
+
+            <!-- Results content (hidden initially) -->
+            <div id="results-content" class="hidden">
+                <!-- Summary cards -->
+                <div id="summary-cards" class="summary-grid">
+                    <div class="summary-card card-fans">
+                        <div class="card-value" id="result-num-fans">—</div>
+                        <div class="card-label">Brasseur(s)</div>
+                    </div>
+                    <div class="summary-card card-diameter">
+                        <div class="card-value" id="result-diameter">—</div>
+                        <div class="card-label">Diamètre (cm)</div>
+                    </div>
+                    <div class="summary-card card-mounting">
+                        <div class="card-value" id="result-mounting">—</div>
+                        <div class="card-label">Montage</div>
+                    </div>
+                    <div class="summary-card card-ce">
+                        <div class="card-value" id="result-ce">—</div>
+                        <div class="card-label">Effet rafraîchissant (°C)</div>
+                    </div>
+                </div>
+
+                <!-- Constraints checklist -->
+                <details id="constraints-section" class="results-section constraints-accordion">
+                    <summary>
+                        <h3>Vérification des contraintes</h3>
+                    </summary>
+                    <ul id="constraints-list" class="constraints-list"></ul>
+                </details>
+
+                <div id="explanation-section" class="results-section">
+                    <h3>Explication du choix</h3>
+                    <div id="results-explanation" class="results-explanation"></div>
+                </div>
+
+                <!-- Visualizations -->
+                <div class="viz-container">
+                    <div class="viz-block">
+                        <h3>Vue en plan</h3>
+                        <div class="canvas-wrapper">
+                            <canvas id="canvas-plan" width="600" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div class="viz-block">
+                        <h3>Vue en coupe</h3>
+                        <div class="canvas-wrapper">
+                            <canvas id="canvas-section" width="600" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed metrics -->
+                <div id="metrics-section" class="results-section">
+                    <h3>Métriques détaillées</h3>
+                    <div class="metrics-grid" id="metrics-grid"></div>
+                </div>
+
+                <!-- Market recommendation -->
+                <div id="market-section" class="results-section">
+                    <h3>Diamètres disponibles sur le marché</h3>
+                    <p class="market-note">Afin d'optimiser l'acoustique et la pérennité de votre brasseur, privilégiez un modèle avec fixation sur rotule/pivot.</p>
+                    <div id="market-diameters" class="market-grid"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="app-footer">
+        <p class="footer-intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
+        <ul class="footer-sources">
+            <li>
+                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
+                <span>Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
+            </li>
+            <li>
+                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
+                <span>Crédits : Surya Consultants, LASA.</span>
+            </li>
+        </ul>
+        <p>Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
+        <p class="disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
