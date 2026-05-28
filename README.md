@@ -109,13 +109,6 @@ Sources de travail complémentaires utilisées pour cette application :
 - Le confort réel dépend d'autres paramètres non saisis ici : humidité, température moyenne radiante, vêture, comportement des occupants, géométrie fine du local, obstacles, etc.
 - L'application ne gère pas encore de plan irrégulier, de plusieurs zones libres personnalisées ni de catalogue produit détaillé.
 
-## Publication GitHub
-
-Pour une publication propre sur GitHub, il est recommandé d'ajouter également :
-
-- une capture d'écran de l'interface dans ce `README` ;
-- éventuellement une URL de démo si vous prévoyez un hébergement statique.
-
 ## Licence
 
 Ce projet est distribué sous licence GNU Affero General Public License v3.0.
