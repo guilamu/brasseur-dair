@@ -3,7 +3,7 @@
    ============================================= */
 
 // ── Constants ──────────────────────────────────────
-const MARKET_DIAMETERS_CM = [70, 80, 90, 107, 122, 132, 142, 152, 166];
+const MARKET_DIAMETERS_CM = [70, 80, 90, 103, 107, 112, 122, 127, 132, 142, 152, 166];
 const EPSILON = 1e-9;
 const BED_MODE_DEFAULTS = {
     targetSquareSize: 2.5,
