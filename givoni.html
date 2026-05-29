@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprendre le brasseur d'air : Le Diagramme de Givoni</title>
+    <meta name="description" content="Découvrez le diagramme bioclimatique de Givoni interactif. Comprenez comment le brasseur d'air plafonnier améliore le confort thermique de façon sobre et durable en été comme en hiver.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Modern Premium Design System */
+        :root {
+            /* Map to styles.css Design Tokens */
+            --bg-app: var(--bg-primary);
+            --bg-panel: var(--bg-secondary);
+            --bg-panel-hover: var(--bg-tertiary);
+            --border-panel: var(--border);
+            --text-main: var(--text-primary);
+            --text-muted: var(--text-secondary);
+            --text-light: var(--text-muted);
+            --primary: var(--blue);
+            --primary-glow: var(--blue-dim);
+            --primary-light: var(--bg-tertiary);
+            --accent-active: var(--accent);
+            
+            /* Givoni Comfort Zone Colors (Dark Theme) */
+            --color-comfort: #10b981;
+            --color-comfort-bg: var(--color-comfort);
+            --color-comfort-border: #059669;
+            
+            --color-ventilation: #3b82f6;
+            --color-ventilation-bg: var(--color-ventilation);
+            --color-ventilation-border: #2563eb;
+            
+            --color-inertia: #fbbf24;
+            --color-inertia-bg: rgba(251, 191, 36, 0.12);
+            --color-inertia-border: rgba(251, 191, 36, 0.35);
+            
+            --color-evaporative: #a78bfa;
+            --color-evaporative-bg: rgba(167, 139, 250, 0.1);
+            --color-evaporative-border: rgba(167, 139, 250, 0.3);
+            
+            --color-heating: #94a3b8;
+            --color-heating-bg: rgba(148, 163, 184, 0.1);
+            --color-heating-border: rgba(148, 163, 184, 0.3);
+            
+            --color-climatisation: #f87171;
+            --color-climatisation-bg: rgba(248, 113, 113, 0.1);
+            --color-climatisation-border: rgba(248, 113, 113, 0.3);
+            
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --card-shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --font-headings: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            /* Givoni Comfort Zone Colors (Light Theme) */
+            --color-comfort: #059669;
+            --color-comfort-bg: var(--color-comfort);
+            --color-comfort-border: #047857;
+            
+            --color-ventilation: #1d4ed8;
+            --color-ventilation-bg: var(--color-ventilation);
+            --color-ventilation-border: #1e40af;
+            
+            --color-inertia: #f59e0b;
+            --color-inertia-bg: rgba(245, 158, 11, 0.15);
+            --color-inertia-border: rgba(245, 158, 11, 0.4);
+            
+            --color-evaporative: #8b5cf6;
+            --color-evaporative-bg: rgba(139, 92, 246, 0.12);
+            --color-evaporative-border: rgba(139, 92, 246, 0.35);
+            
+            --color-heating: #64748b;
+            --color-heating-bg: rgba(100, 116, 139, 0.12);
+            --color-heating-border: rgba(100, 116, 139, 0.35);
+            
+            --color-climatisation: #ef4444;
+            --color-climatisation-bg: rgba(239, 68, 68, 0.12);
+            --color-climatisation-border: rgba(239, 68, 68, 0.35);
+            
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05), 0 0 0 1px rgb(0 0 0 / 0.02);
+            --card-shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.04);
+        }
+
+        /* Basic resets */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: var(--transition-smooth);
+            padding-bottom: 60px;
+        }
+
+        h2, h3, h4 {
+            font-family: var(--font-headings);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+
+
+        /* Container & Layout */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .intro-hero {
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--bg-panel) 0%, var(--primary-light) 100%);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intro-hero h2 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+        }
+
+        .intro-hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 900px;
+        }
+
+        .intro-hero::after {
+            content: "🌀";
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            font-size: 10rem;
+            opacity: 0.05;
+            transform: rotate(15deg);
+        }
+
+        /* Main Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panel Container */
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            padding: 1.75rem;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel:hover {
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-panel);
+            padding-bottom: 1rem;
+        }
+
+        .panel-header h3 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Psychrometric SVG styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            background-color: var(--bg-panel);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-panel);
+        }
+
+        .chart-svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            user-select: none;
+        }
+
+        /* Dynamic classes inside SVG */
+        .svg-grid-line {
+            stroke: var(--border-panel);
+            stroke-width: 0.5;
+            stroke-dasharray: 2,4;
+            opacity: 0.25; /* Very subtle grid */
+        }
+        
+        .svg-grid-line-main {
+            stroke: var(--border-panel);
+            stroke-width: 0.8;
+            opacity: 0.45; /* Soft axis grid lines */
+        }
+
+        .svg-rh-curve {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 0.5;
+            opacity: 0.12; /* Subtle RH curves */
+        }
+
+        .svg-rh-curve-saturation {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 1.2;
+            opacity: 0.35; /* Soft saturation curve */
+        }
+
+        .svg-chart-label {
+            font-family: var(--font-body);
+            font-size: 10px;
+            fill: var(--text-muted);
+        }
+
+        .svg-chart-label-axis {
+            font-family: var(--font-headings);
+            font-weight: 600;
+            font-size: 11px;
+            fill: var(--text-main);
+        }
+
+        .svg-zone-polygon {
+            stroke-width: 1.8;
+            cursor: pointer;
+            fill-opacity: 0.35; /* Highly visible default baseline */
+            transition: var(--transition-smooth);
+        }
+
+        .svg-zone-polygon:hover {
+            fill-opacity: 0.55;
+            stroke-width: 2.8;
+        }
+
+        .svg-pointer {
+            fill: var(--accent-active);
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 6px var(--accent-active));
+            transition: cx 0.1s ease-out, cy 0.1s ease-out;
+        }
+
+        .svg-pointer-pulse {
+            fill: var(--accent-active);
+            opacity: 0.3;
+            transition: cx 0.1s ease-out, cy 0.1s ease-out;
+            animation: pulse-ring 2s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes pulse-ring {
+            0% { r: 5px; opacity: 0.6; }
+            100% { r: 18px; opacity: 0; }
+        }
+
+        /* SVG Tooltip */
+        .svg-tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Sliders Panel */
+        .simulator-controls {
+            background-color: var(--bg-app);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-panel);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slider-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--bg-panel);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-panel);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .slider-input {
+            width: 100%;
+            height: 6px;
+            background: var(--border-panel);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: var(--transition-smooth);
+        }
+
+        .slider-input::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .slider-input:focus::-webkit-slider-thumb {
+            background: var(--accent-active);
+        }
+
+        /* Dynamic Diagnostics Card */
+        .diagnostic-card {
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--border-panel);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: var(--transition-smooth);
+        }
+
+        .diagnostic-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-color: var(--text-light);
+        }
+
+        .diagnostic-status {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .diagnostic-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .diagnostic-description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .diagnostic-action-box {
+            margin-top: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--primary);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        
+        [data-theme="dark"] .diagnostic-action-box {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Interactive Fan Simulation */
+        .fan-sim-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .fan-icon-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-app);
+            border-radius: 50%;
+            border: 1px solid var(--border-panel);
+        }
+
+        .fan-icon-svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--text-muted);
+            transform-origin: center;
+        }
+
+        /* Fan spin speeds */
+        .fan-spin-off {
+            animation: none;
+        }
+        .fan-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        .fan-spin-medium {
+            animation: spin 1.2s linear infinite;
+        }
+        .fan-spin-fast {
+            animation: spin 0.4s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fan-sim-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fan-sim-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .fan-sim-value {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Explanatory Content Panel */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-panel);
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+        }
+        
+        [data-theme="light"] .nav-tabs {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome/Safari/Opera */
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition-smooth);
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+        
+        [data-theme="light"] .tab-btn:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .tab-btn.active {
+            color: #ffffff !important;
+            background-color: var(--primary);
+            box-shadow: 0 2px 8px var(--primary-glow);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Educational card list */
+        .edu-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .edu-card {
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            background-color: var(--bg-panel-hover);
+            transition: var(--transition-smooth);
+        }
+
+        .edu-card:hover {
+            transform: translateX(4px);
+            border-color: var(--text-light);
+        }
+
+        .edu-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        .edu-card-icon {
+            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-panel);
+            border-radius: 50%;
+            border: 1px solid var(--border-panel);
+        }
+
+        .edu-card h4 {
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        .edu-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Key numbers / statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: var(--font-headings);
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Accordion style comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-panel);
+            text-align: left;
+        }
+
+        .comparison-table th {
+            font-weight: 600;
+            color: var(--text-main);
+            background-color: var(--bg-panel-hover);
+        }
+
+        .comparison-table td {
+            color: var(--text-muted);
+        }
+
+        .comparison-table tr:hover td {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Legend */
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.8rem;
+            background: var(--bg-app);
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-panel);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .legend-item:hover {
+            background: var(--bg-panel);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .legend-text {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .legend-item.active .legend-text {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .footer-banner {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-panel);
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .footer-banner p {
+            margin-bottom: 4px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+            .intro-hero {
+                padding: 1.5rem;
+            }
+            .intro-hero h2 {
+                font-size: 1.5rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header id="app-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <img src="fan.svg" alt="Brasseur d'air" width="48" height="48">
+                </div>
+                <div>
+                    <h1>Brasseur d'Air</h1>
+                    <a href="#app-footer" class="subtitle subtitle-link">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
+                </div>
+            </div>
+            <div class="header-controls">
+                <a href="index.html" class="header-btn" title="Retourner à l'outil de calepinage">
+                    <span>📐</span> Outil Calepinage
+                </a>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Basculer le thème clair / sombre" title="Changer de thème">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Hero Introduction -->
+        <section class="intro-hero">
+            <h2>Pourquoi brasser de l'air chaud apporte-t-il du confort ?</h2>
+            <p>
+                Contrairement à la climatisation qui refroidit la température globale d'une pièce à grand renfort d'énergie, le brasseur d'air plafonnier agit directement sur le corps humain. 
+                Le <strong>Diagramme de Givoni</strong> démontre scientifiquement ce principe : en augmentant la vitesse de l'air, nous repoussons de plusieurs degrés la zone de confort thermique naturelle, pour une consommation électrique infime.
+            </p>
+        </section>
+
+        <!-- Main workspace grid: Chart & controls vs Explanations -->
+        <div class="workspace-grid">
+            
+            <!-- Left panel: Interactive Simulator -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h3><span>📊</span> Simulateur Bioclimatique de Givoni</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;">
+                        Cliquez/glissez sur le graphique ou utilisez les curseurs
+                    </span>
+                </div>
+
+                <!-- Interactive SVG Chart -->
+                <div class="chart-container" id="chart-card">
+                    <svg class="chart-svg" viewBox="0 0 800 600" id="givoni-svg">
+                        <!-- Definitions (Filters & Clips) -->
+                        <defs>
+                            <!-- Grids clip path -->
+                            <clipPath id="plot-area-clip">
+                                <rect x="70" y="40" width="680" height="500" />
+                            </clipPath>
+                            
+                            <!-- Soft glow for active point -->
+                            <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+
+                        <!-- Plot Area Background -->
+                        <rect x="70" y="40" width="680" height="500" fill="var(--bg-panel)" />
+
+                        <!-- Grid Lines Group -->
+                        <g id="grid-group" clip-path="url(#plot-area-clip)">
+                            <!-- Dynamic grid lines will be generated here -->
+                        </g>
+
+                        <!-- Relative Humidity Curves Group -->
+                        <g id="rh-curves-group" clip-path="url(#plot-area-clip)"></g>
+
+                        <!-- Dynamic Zones (polygons) will be rendered inside this group -->
+                        <g id="zones-group" clip-path="url(#plot-area-clip)"></g>
+
+                        <!-- Outer Axis Borders -->
+                        <line x1="70" y1="40" x2="70" y2="540" class="svg-grid-line-main" />
+                        <line x1="70" y1="540" x2="750" y2="540" class="svg-grid-line-main" />
+                        <line x1="750" y1="40" x2="750" y2="540" class="svg-grid-line-main" />
+                        <line x1="70" y1="40" x2="750" y2="40" class="svg-grid-line-main" />
+
+                        <!-- Static X-Axis Labels (Temperature) -->
+                        <g id="x-axis-labels"></g>
+                        <text x="410" y="585" text-anchor="middle" class="svg-chart-label-axis">Température Sèche de l'Air (°C)</text>
+
+                        <!-- Static Y-Axis Labels (Specific Humidity) -->
+                        <g id="y-axis-labels"></g>
+                        <!-- Left Y-Axis title -->
+                        <text x="25" y="290" transform="rotate(-90, 25, 290)" text-anchor="middle" class="svg-chart-label-axis">Humidité Spécifique (g d'eau / kg d'air sec)</text>
+                        <!-- Right Y-Axis title -->
+                        <text x="790" y="290" transform="rotate(90, 790, 290)" text-anchor="middle" class="svg-chart-label-axis">Humidité Absolue (g/kg)</text>
+
+                        <!-- Active Climate Point Indicator -->
+                        <g clip-path="url(#plot-area-clip)">
+                            <circle id="pulse-ring" cx="300" cy="300" r="10" class="svg-pointer-pulse" />
+                            <circle id="active-pointer" cx="300" cy="300" r="6" class="svg-pointer" filter="url(#glow-effect)" />
+                        </g>
+                    </svg>
+                    <!-- Floating tooltip on SVG -->
+                    <div class="svg-tooltip" id="chart-tooltip">30°C, 50% HR</div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend-grid" id="chart-legend">
+                    <!-- Dynamic legend items -->
+                </div>
+
+                <!-- Sliders for control -->
+                <div class="simulator-controls">
+                    <!-- Temperature slider -->
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <span class="slider-title">🌡️ Température Ambiante</span>
+                            <span class="slider-value" id="temp-val">28,0 °C</span>
+                        </div>
+                        <input type="range" id="temp-slider" class="slider-input" min="10" max="40" step="0.1" value="28">
+                    </div>
+
+                    <!-- Humidity slider -->
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <span class="slider-title">💧 Humidité Relative</span>
+                            <span class="slider-value" id="hum-val">60 %</span>
+                        </div>
+                        <input type="range" id="hum-slider" class="slider-input" min="10" max="100" step="1" value="60">
+                    </div>
+                </div>
+
+                <!-- Dynamic Diagnostic Card -->
+                <div class="diagnostic-card" id="diag-card">
+                    <span class="diagnostic-status" id="diag-status">Analyse en cours...</span>
+                    <h4 class="diagnostic-title" id="diag-title">Confort Thermique de Base</h4>
+                    <p class="diagnostic-description" id="diag-desc">Déterminez le confort en modifiant la température et l'humidité.</p>
+                    <div class="diagnostic-action-box" id="diag-action">Recommandation passive.</div>
+                    
+                    <!-- Fan speed visualization -->
+                    <div class="fan-sim-container" id="fan-sim">
+                        <div class="fan-icon-wrapper">
+                            <svg class="fan-icon-svg fan-spin-off" id="sim-fan-icon" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-12.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 9c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm-4.5-4.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm9 0c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z"/>
+                            </svg>
+                        </div>
+                        <div class="fan-sim-text">
+                            <span class="fan-sim-label" id="fan-sim-state">Brasseur d'air arrêté</span>
+                            <span class="fan-sim-value" id="fan-sim-effect">Aucun effet de rafraîchissement nécessaire</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Right panel: Interactive Explanations and documentation -->
+            <section class="panel info-panel">
+                <div class="panel-header">
+                    <h3><span>📖</span> L'utilité du Brasseur d'Air expliquée</h3>
+                </div>
+
+                <!-- Documentation Tabs Navigation -->
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" onclick="switchTab(this, 'tab-physio')">Physiologie</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-energy')">Énergie &amp; Coûts</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-couplage')">Couplage Clim</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-saisons')">Saisons</button>
+                </nav>
+
+                <!-- Tab 1: Physiologie -->
+                <div id="tab-physio" class="tab-content active">
+                    <div class="edu-section">
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">🧠</span>
+                                <h4>Le ventilateur ne refroidit pas la pièce, il refroidit la peau</h4>
+                            </div>
+                            <p>
+                                C'est l'un des malentendus les plus courants : un brasseur d'air n'abaisse pas la température physique (mesurée par un thermomètre classique). En revanche, il modifie la <strong>température ressentie</strong> en agissant sur les mécanismes de régulation thermique du corps humain.
+                            </p>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">💧</span>
+                                <h4>Deux effets physiques majeurs</h4>
+                            </div>
+                            <p>
+                                <strong>1. L'accélération de l'évaporation (Effet principal) :</strong> Notre peau évapore continuellement une infime pellicule d'eau (la transpiration). Le flux d'air accélère cette évaporation. Ce changement d'état liquide-gaz est endothermique : il absorbe directement la chaleur de notre épiderme, créant une baisse immédiate de température cutanée.<br><br>
+                                <strong>2. La convection forcée :</strong> Notre corps chauffe naturellement l'air qui l'entoure immédiatement, créant une enveloppe d'air chaud et isolante (la couche limite). Le brasseur d'air balaie cette enveloppe chaude pour la remplacer par l'air ambiant de la pièce (s'il est plus frais que la température corporelle, soit < 37°C), facilitant la dissipation thermique de notre corps.
+                            </p>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">💨</span>
+                                <h4>La règle d'or scientifique (1 m/s = -3°C)</h4>
+                            </div>
+                            <p>
+                                Les études issues des travaux bioclimatiques de Givoni et les normes de confort (ASHRAE 55) s'accordent sur un fait majeur : une vitesse d'air moyenne de <strong>1 m/s</strong> au niveau des occupants équivaut à un rafraîchissement ressenti de <strong>2°C à 4°C</strong> de moins. 
+                                Ainsi, à 30°C dans un espace brassé, votre corps se comporte exactement comme s'il faisait 26°C ou 27°C dans une pièce sans courant d'air.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Énergie & Coûts -->
+                <div id="tab-energy" class="tab-content">
+                    <div class="edu-section">
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">⚡</span>
+                                <h4>L'incroyable efficacité énergétique du mouvement</h4>
+                            </div>
+                            <p>
+                                Sur le plan thermodynamique, modifier la température globale de milliers de mètres cubes d'air demande une quantité faramineuse d'énergie (utilisation d'un compresseur et cycle de réfrigération). Mettre en mouvement ce même volume pour refroidir uniquement les corps est infiniment plus sobre.
+                            </p>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-number">15x à 40x</div>
+                                    <div class="stat-label">Moins d'énergie qu'une clim</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">15 à 35 W</div>
+                                    <div class="stat-label">Puissance type d'un BAP</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">💰</span>
+                                <h4>Comparatif direct de consommation (Données ADEME)</h4>
+                            </div>
+                            <table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Critère</th>
+                                        <th>Climatiseur (Chambre 12m²)</th>
+                                        <th>Brasseur d'Air Plafonnier</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Puissance électrique</td>
+                                        <td>1 000 W à 2 000 W</td>
+                                        <td><strong>15 W à 35 W</strong> (Moteur DC)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Consommation typique</td>
+                                        <td>500 kWh / an</td>
+                                        <td><strong>15 à 36 kWh / an</strong> (7% de la clim !)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Coût de fonctionnement</td>
+                                        <td>~120 € à 150 € / an</td>
+                                        <td><strong>~3 € à 8 € / an</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Impact carbone</td>
+                                        <td>Élevé (fluides frigorigènes + élec)</td>
+                                        <td><strong>Négligeable</strong> (pas de fluides)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Couplage Clim -->
+                <div id="tab-couplage" class="tab-content">
+                    <div class="edu-section">
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">🤝</span>
+                                <h4>Climatisation + Brasseur : L'alliance thermodynamique gagnante</h4>
+                            </div>
+                            <p>
+                                Dans les zones tropicales humides ou pendant les canicules extrêmes, la ventilation seule peut ne pas suffire pour atteindre la zone de confort. La solution idéale n'est pas d'allumer la clim à fond, mais d'adopter un <strong>fonctionnement couplé</strong>.
+                            </p>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">📈</span>
+                                <h4>Remonter la consigne pour diviser les factures</h4>
+                            </div>
+                            <p>
+                                En faisant fonctionner simultanément un brasseur d'air plafonnier, la sensation de fraîcheur de 2°C à 3°C vous permet de régler le thermostat de votre climatisation à <strong>27°C au lieu de 25°C</strong> (ou 28°C au lieu de 26°C).<br><br>
+                                En physique des bâtiments, <strong>chaque degré supplémentaire sur la consigne de climatisation réduit la consommation d'énergie de 7% à 10%</strong>.
+                            </p>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">🎯</span>
+                                <h4>Résultats des Simulations Dynamiques (ADEME - BRASSE)</h4>
+                                <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;">Études sur Pointe-à-Pitre (Guadeloupe)</span>
+                            </div>
+                            <p>
+                                Des simulations thermiques dynamiques (STD) réalisées dans le cadre du programme public BRASSE ont prouvé l'efficacité de ce couplage :
+                            </p>
+                            <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+                                <li><strong>Cas N°1 (Chambre) :</strong> Le couplage (clim réglée à 27°C + BAP) réduit la facture annuelle de climatisation de <strong>27%</strong> par rapport à une clim seule réglée à 25°C. La consommation du brasseur ne pèse que 7% du total.</li>
+                                <li><strong>Cas N°2 (Bureau tertiaire) :</strong> La consigne relevée à 27°C avec le brasseur d'air génère <strong>20% d'économies d'énergie</strong> sur l'année. Le brasseur d'air ne représente que 4% des consommations du bureau.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Saisons (Été/Hiver) -->
+                <div id="tab-saisons" class="tab-content">
+                    <div class="edu-section">
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">☀️</span>
+                                <h4>Le mode été : Confort direct par flux vertical</h4>
+                            </div>
+                            <p>
+                                En été (ou en climat tropical permanent), le ventilateur tourne dans le sens horaire direct pour propulser l'air du haut vers le bas. Ce flux d'air vertical vient directement balayer la peau des occupants présents dans le cône de soufflage, maximisant le rafraîchissement par évaporation de la sueur.
+                            </p>
+                        </div>
+
+                        <div class="edu-card">
+                            <div class="edu-card-header">
+                                <span class="edu-card-icon">❄️</span>
+                                <h4>Le mode hiver : La déstratification thermique</h4>
+                            </div>
+                            <p>
+                                C'est une loi physique incontournable : l'air chaud (plus léger) monte par convection naturelle et s'accumule sous le plafond. Dans une pièce haute de plafond, l'écart de température peut atteindre 5°C à 10°C entre le sol et le plafond (gaspillage d'énergie massif !).<br><br>
+                                En hiver, le brasseur d'air est utilisé pour la <strong>déstratification</strong> :
+                            </p>
+                            <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+                                <li>Il tourne généralement en <strong>mode inverse (anti-horaire)</strong> à basse vitesse pour propulser l'air doux vers le plafond.</li>
+                                <li>L'air s'étale sur le plafond et redescend doucement le long des murs sans générer de courant d'air direct froid sur les personnes.</li>
+                                <li>Cela homogénéise la chaleur dans toute la pièce, augmentant le confort au niveau du sol et réduisant les besoins de chauffage de l'ordre de <strong>5% à 10%</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="app-footer">
+        <p class="footer-intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
+        <ul class="footer-sources">
+            <li>
+                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
+                <span>Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
+            </li>
+            <li>
+                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
+                <span>Crédits : Surya Consultants, LASA.</span>
+            </li>
+        </ul>
+        <p>Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
+        <div class="footer-project-links">
+            <span class="footer-version">Version 0.9.2</span>
+            <a class="footer-github-link" href="https://github.com/guilamu/brasseur-dair" target="_blank" rel="noopener noreferrer" aria-label="Accéder au code source sur GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.15-3.2.7-3.88-1.36-3.88-1.36-.53-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.03 1.76 2.69 1.25 3.35.95.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.72 0-1.27.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.19 1.19a11.1 11.1 0 0 1 5.81 0c2.22-1.5 3.19-1.19 3.19-1.19.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.11 0 4.45-2.71 5.42-5.29 5.71.42.36.79 1.06.79 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
+                </svg>
+                <span>Code source</span>
+            </a>
+        </div>
+        <p class="disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
+    </footer>
+
+    <!-- Logic / Math & Interaction script -->
+    <script>
+        // Setup state variables
+        let activeTemp = 28.0;
+        let activeHum = 60;
+        let activeTheme = 'light';
+
+        // Psychrometric scale settings
+        const T_MIN = 10;
+        const T_MAX = 40;
+        const X_MIN = 0;
+        const X_MAX = 28; // g/kg dry air
+        
+        // SVG dimensions
+        const svgW = 800;
+        const svgH = 600;
+        const mLeft = 70;
+        const mRight = 50;
+        const mTop = 40;
+        const mBottom = 60;
+        
+        const graphW = svgW - mLeft - mRight;
+        const graphH = svgH - mTop - mBottom;
+
+        // Coordinate projection functions
+        function toSvgX(T) {
+            return mLeft + ((T - T_MIN) / (T_MAX - T_MIN)) * graphW;
+        }
+
+        function toSvgY(xVal) {
+            return svgH - mBottom - ((xVal - X_MIN) / (X_MAX - X_MIN)) * graphH;
+        }
+
+        function fromSvgX(svgX) {
+            return T_MIN + ((svgX - mLeft) / graphW) * (T_MAX - T_MIN);
+        }
+
+        function fromSvgY(svgY) {
+            return X_MIN + ((svgH - mBottom - svgY) / graphH) * (X_MAX - X_MIN);
+        }
+
+        // Thermodynamic equations for moist air
+        // Saturation vapor pressure pSat in hPa (Arden Buck formula)
+        function calcPSat(T) {
+            return 6.1121 * Math.exp((17.67 * T) / (T + 243.5));
+        }
+
+        // Specific humidity x in g/kg given Temperature and Relative Humidity
+        function calcX(T, rh) {
+            const pSat = calcPSat(T);
+            const pV = (rh / 100) * pSat;
+            const pAtm = 1013.25; // standard pressure
+            return 621.97 * (pV / (pAtm - pV));
+        }
+
+        // Relative humidity given Temperature and Specific humidity
+        function calcRH(T, x) {
+            const pAtm = 1013.25;
+            const pV = (x * pAtm) / (621.97 + x);
+            const pSat = calcPSat(T);
+            const rh = (pV / pSat) * 100;
+            return Math.min(100, Math.max(0, rh));
+        }
+
+        // Givoni comfort & strategy zones definition
+        const givoniZones = [
+            {
+                id: 'comfort',
+                name: 'Zone de Confort Naturel',
+                color: 'var(--color-comfort)',
+                bgColor: 'var(--color-comfort-bg)',
+                borderColor: 'var(--color-comfort-border)',
+                statusText: 'Confort optimal',
+                desc: 'Température et humidité idéales. Le métabolisme régule la chaleur corporelle sans assistance active. Profitez de ce confort passif.',
+                action: '✅ Conditions parfaites. Aucun traitement thermique requis.',
+                fanSpeed: 'off',
+                fanLabel: 'Brasseur d\'air arrêté',
+                fanDesc: 'Aucune ventilation nécessaire pour le confort thermique.',
+                // Base comfort coordinates limits
+                tMin: 20, tMax: 26, rhMin: 30, rhMax: 75, xMin: 4.5, xMax: 12
+            },
+            {
+                id: 'ventilation',
+                name: 'Zone de Confort Brasseur d\'Air',
+                color: 'var(--color-ventilation)',
+                bgColor: 'var(--color-ventilation-bg)',
+                borderColor: 'var(--color-ventilation-border)',
+                statusText: 'Ventilation efficace',
+                desc: 'La sensation de chaleur est lourde ou étouffante. La mise en mouvement de l\'air à 1 m/s crée une sensation de fraîcheur immédiate de 2°C à 4°C, évacuant la sueur et ramenant le ressenti dans la zone de confort.',
+                action: '🌀 Brasseur d\'air activé. Évite 100% de climatisation active.',
+                fanSpeed: 'medium',
+                fanLabel: 'Brasseur d\'air activé (Vitesse 2-4)',
+                fanDesc: 'Génère un flux d\'air rafraîchissant de 0,6 à 1,0 m/s sur la peau.',
+                tMin: 20, tMax: 32, rhMin: 30, rhMax: 80, xMin: 4.5, xMax: 17.5
+            },
+            {
+                id: 'inertia',
+                name: 'Inertie & Ventilation Nocturne',
+                color: 'var(--color-inertia)',
+                bgColor: 'var(--color-inertia-bg)',
+                borderColor: 'var(--color-inertia-border)',
+                statusText: 'Inertie recommandée',
+                desc: 'Climat chaud mais très sec. La chaleur diurne peut être absorbée par l\'inertie de la structure du bâtiment. Une ventilation intensive la nuit refroidit les murs qui restituent la fraîcheur en journée.',
+                action: '🏢 Fermez les fenêtres le jour, ventilez fortement la nuit.',
+                fanSpeed: 'slow',
+                fanLabel: 'Brasseur d\'air lent (Vitesse 1-2)',
+                fanDesc: 'Aide à brasser l\'air sec et homogénéiser la température.',
+                tMin: 26, tMax: 36, rhMin: 5, rhMax: 30, xMin: 0, xMax: 8
+            },
+            {
+                id: 'evaporative',
+                name: 'Rafraîchissement Évaporatif',
+                color: 'var(--color-evaporative)',
+                bgColor: 'var(--color-evaporative-bg)',
+                borderColor: 'var(--color-evaporative-border)',
+                statusText: 'Refroidissement adiabatique',
+                desc: 'Climat extrêmement chaud et très sec. Ajouter de l\'humidité à l\'air (par brumisation ou refroidisseur évaporatif) absorbe les calories par transition de phase de l\'eau, faisant chuter la température de l\'air de plusieurs degrés.',
+                action: '💦 Solution optimale : Brumisation ou rafraîchisseur adiabatique.',
+                fanSpeed: 'slow',
+                fanLabel: 'Brasseur d\'air en soutien',
+                fanDesc: 'Aide à diffuser l\'air refroidi par évaporation.',
+                tMin: 26, tMax: 40, rhMin: 0, rhMax: 25, xMin: 0, xMax: 10
+            },
+            {
+                id: 'heating',
+                name: 'Chauffage requis (ou Déstratification)',
+                color: 'var(--color-heating)',
+                bgColor: 'var(--color-heating-bg)',
+                borderColor: 'var(--color-heating-border)',
+                statusText: 'Climat froid',
+                desc: 'Températures trop basses pour le corps habillé léger. Si vous chauffez la pièce, l\'air chaud montera stagner au plafond. Utilisez le brasseur d\'air à très basse vitesse ou en rotation inversée pour faire redescendre cette chaleur (déstratification).',
+                action: '🔥 Allumez le chauffage + Brasseur d\'air en mode déstratification (sens inverse).',
+                fanSpeed: 'slow-reverse',
+                fanLabel: 'Mode Déstratification Hiver activé',
+                fanDesc: 'Fait redescendre l\'air chaud accumulé au plafond sans courant d\'air froid.',
+                tMin: 10, tMax: 20, rhMin: 0, rhMax: 100, xMin: 0, xMax: 28
+            },
+            {
+                id: 'climatisation',
+                name: 'Climatisation nécessaire (Couplage optimal BAP)',
+                color: 'var(--color-climatisation)',
+                bgColor: 'var(--color-climatisation-bg)',
+                borderColor: 'var(--color-climatisation-border)',
+                statusText: 'Rafraîchissement requis',
+                desc: 'Le climat dépasse les limites physiologiques de la simple ventilation (chaleur lourde extrême ou humidité saturée empêchant l\'évaporation de la sueur). Une climatisation active est requise pour déshumidifier et refroidir l\'espace.',
+                action: '❄️ Climatisation active. Réglez la consigne à 27°C et activez le brasseur d\'air !',
+                fanSpeed: 'fast',
+                fanLabel: 'Couplage Clim + BAP (Économies -25%)',
+                fanDesc: 'Permet de relever le thermostat de clim de 2°C pour un confort identique.',
+                tMin: 20, tMax: 40, rhMin: 0, rhMax: 100, xMin: 0, xMax: 28
+            }
+        ];
+
+        // Determine which zone applies to given T, RH and x
+        function checkActiveZone(T, RH, x) {
+            // First check base heating zone
+            if (T < 20) {
+                return givoniZones.find(z => z.id === 'heating');
+            }
+            
+            // Comfort zone is high priority
+            const zoneComfort = givoniZones.find(z => z.id === 'comfort');
+            if (T >= zoneComfort.tMin && T <= zoneComfort.tMax && 
+                x >= zoneComfort.xMin && x <= zoneComfort.xMax && 
+                RH >= zoneComfort.rhMin && RH <= zoneComfort.rhMax) {
+                return zoneComfort;
+            }
+
+            // Ventilation zone expands comfort
+            const zoneVent = givoniZones.find(z => z.id === 'ventilation');
+            if (T >= zoneVent.tMin && T <= zoneVent.tMax && 
+                x >= zoneVent.xMin && x <= zoneVent.xMax && 
+                RH >= zoneVent.rhMin && RH <= zoneVent.rhMax) {
+                return zoneVent;
+            }
+
+            // Dry hot inertia zone
+            const zoneInertia = givoniZones.find(z => z.id === 'inertia');
+            if (T >= zoneInertia.tMin && T <= zoneInertia.tMax && 
+                x >= zoneInertia.xMin && x <= zoneInertia.xMax && 
+                RH >= zoneInertia.rhMin && RH <= zoneInertia.rhMax) {
+                return zoneInertia;
+            }
+
+            // Evaporative zone
+            const zoneEvap = givoniZones.find(z => z.id === 'evaporative');
+            if (T >= zoneEvap.tMin && T <= zoneEvap.tMax && 
+                x >= zoneEvap.xMin && x <= zoneEvap.xMax && 
+                RH >= zoneEvap.rhMin && RH <= zoneEvap.rhMax) {
+                return zoneEvap;
+            }
+
+            // Default to climatisation if hot and outside comfort/vent/inertia/evap limits
+            return givoniZones.find(z => z.id === 'climatisation');
+        }
+
+        // Draw dynamic psychrometric grid and relative humidity lines
+        function renderPsychrometricChart() {
+            const gridGroup = document.getElementById('grid-group');
+            const rhGroup = document.getElementById('rh-curves-group');
+            const xLabels = document.getElementById('x-axis-labels');
+            const yLabels = document.getElementById('y-axis-labels');
+
+            gridGroup.innerHTML = '';
+            rhGroup.innerHTML = '';
+            xLabels.innerHTML = '';
+            yLabels.innerHTML = '';
+
+            // Draw Temperature Grid Lines (Verticals, every 5°C)
+            for (let T = T_MIN; T <= T_MAX; T += 5) {
+                const svgX = toSvgX(T);
+                
+                // Grid line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', svgX);
+                line.setAttribute('y1', mTop);
+                line.setAttribute('x2', svgX);
+                line.setAttribute('y2', svgH - mBottom);
+                line.setAttribute('class', T === 20 || T === 30 ? 'svg-grid-line-main' : 'svg-grid-line');
+                gridGroup.appendChild(line);
+
+                // Label below x axis
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', svgX);
+                text.setAttribute('y', svgH - mBottom + 20);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('class', 'svg-chart-label');
+                text.textContent = `${T}°C`;
+                xLabels.appendChild(text);
+            }
+
+            // Draw Absolute Humidity Grid Lines (Horizontals, every 4 g/kg)
+            for (let xVal = X_MIN; xVal <= X_MAX; xVal += 4) {
+                const svgY = toSvgY(xVal);
+                
+                // Grid line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', mLeft);
+                line.setAttribute('y1', svgY);
+                line.setAttribute('x2', svgW - mRight);
+                line.setAttribute('y2', svgY);
+                line.setAttribute('class', xVal === 12 || xVal === 18 ? 'svg-grid-line-main' : 'svg-grid-line');
+                gridGroup.appendChild(line);
+
+                // Label on Left Y axis
+                const textLeft = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textLeft.setAttribute('x', mLeft - 10);
+                textLeft.setAttribute('y', svgY + 3);
+                textLeft.setAttribute('text-anchor', 'end');
+                textLeft.setAttribute('class', 'svg-chart-label');
+                textLeft.textContent = xVal;
+                yLabels.appendChild(textLeft);
+
+                // Label on Right Y axis
+                const textRight = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textRight.setAttribute('x', svgW - mRight + 10);
+                textRight.setAttribute('y', svgY + 3);
+                textRight.setAttribute('text-anchor', 'start');
+                textRight.setAttribute('class', 'svg-chart-label');
+                textRight.textContent = xVal;
+                yLabels.appendChild(textRight);
+            }
+
+            // Draw Curved Relative Humidity Lines (10% to 100% saturation)
+            const rhValues = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+            rhValues.forEach(rh => {
+                let points = [];
+                for (let T = T_MIN; T <= T_MAX; T += 0.5) {
+                    const xVal = calcX(T, rh);
+                    points.push(`${toSvgX(T)},${toSvgY(xVal)}`);
+                }
+                const pathData = "M " + points.join(" L ");
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                path.setAttribute('class', rh === 100 ? 'svg-rh-curve-saturation' : 'svg-rh-curve');
+                rhGroup.appendChild(path);
+
+                // Place RH labels neatly along the curves at specific temperature
+                const labelTemp = rh > 50 ? 22 : 32;
+                const labelX = toSvgX(labelTemp);
+                const labelY = toSvgY(calcX(labelTemp, rh));
+                
+                if (labelY > mTop && labelY < svgH - mBottom - 10) {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', labelX + 3);
+                    text.setAttribute('y', labelY - 3);
+                    text.setAttribute('transform', `rotate(${(rh > 50 ? -22 : -12)}, ${labelX}, ${labelY})`);
+                    text.setAttribute('class', 'svg-chart-label');
+                    text.style.fontSize = '8px';
+                    text.style.fill = 'var(--text-light)';
+                    text.textContent = `${rh}%`;
+                    rhGroup.appendChild(text);
+                }
+            });
+        }
+
+        // Calculate non-overlapping Ventilation zone by subtracting Comfort zone
+        function getSubtractedVentilationPath() {
+            const zoneComfort = givoniZones.find(z => z.id === 'comfort');
+            const zoneVent = givoniZones.find(z => z.id === 'ventilation');
+            
+            let points = [];
+            
+            // 1. Top boundary: T from 32 down to 20
+            for (let T = zoneVent.tMax; T >= zoneVent.tMin; T -= 0.25) {
+                const xVal = Math.min(zoneVent.xMax, calcX(T, zoneVent.rhMax));
+                points.push({ x: toSvgX(T), y: toSvgY(xVal) });
+            }
+            
+            // 2. Left boundary: at T = 20, go down to comfort top
+            const xComfortTop20 = Math.min(zoneComfort.xMax, calcX(zoneComfort.tMin, zoneComfort.rhMax));
+            points.push({ x: toSvgX(zoneVent.tMin), y: toSvgY(xComfortTop20) });
+            
+            // 3. Top of comfort: T from 20 to 26
+            for (let T = zoneComfort.tMin; T <= zoneComfort.tMax; T += 0.25) {
+                const xVal = Math.min(zoneComfort.xMax, calcX(T, zoneComfort.rhMax));
+                points.push({ x: toSvgX(T), y: toSvgY(xVal) });
+            }
+            
+            // 4. Right of comfort: at T = 26, go down to comfort bottom
+            const xComfortBottom26 = Math.max(zoneComfort.xMin, calcX(zoneComfort.tMax, zoneComfort.rhMin));
+            points.push({ x: toSvgX(zoneComfort.tMax), y: toSvgY(xComfortBottom26) });
+            
+            // 5. Bottom of ventilation: T from 26 to 32
+            for (let T = zoneComfort.tMax; T <= zoneVent.tMax; T += 0.25) {
+                const xVal = Math.max(zoneVent.xMin, calcX(T, zoneVent.rhMin));
+                points.push({ x: toSvgX(T), y: toSvgY(xVal) });
+            }
+            
+            return "M " + points.map(p => `${p.x} ${p.y}`).join(" L ") + " Z";
+        }
+
+        // Helper to attach polygon events
+        function attachPolygonEvents(path, zone) {
+            path.addEventListener('click', (e) => {
+                const centerT = (zone.tMin + zone.tMax) / 2;
+                const centerRH = (zone.rhMin + zone.rhMax) / 2;
+                
+                document.getElementById('temp-slider').value = centerT.toFixed(1);
+                document.getElementById('hum-slider').value = Math.round(centerRH);
+                
+                updateState(centerT, centerRH);
+            });
+        }
+
+        // Draw curved Givoni Comfort strategy polygons inside the SVG
+        function renderComfortZones() {
+            const zonesGroup = document.getElementById('zones-group');
+            zonesGroup.innerHTML = '';
+
+            // 1. Draw Comfort zone
+            const zoneComfort = givoniZones.find(z => z.id === 'comfort');
+            let dComfort = "";
+            let topPoints = [];
+            let bottomPoints = [];
+            for (let T = zoneComfort.tMin; T <= zoneComfort.tMax; T += 0.25) {
+                const xTop = Math.min(zoneComfort.xMax, calcX(T, zoneComfort.rhMax));
+                const xBottom = Math.max(zoneComfort.xMin, calcX(T, zoneComfort.rhMin));
+                topPoints.push({ x: toSvgX(T), y: toSvgY(xTop) });
+                bottomPoints.push({ x: toSvgX(T), y: toSvgY(xBottom) });
+            }
+            dComfort = `M ${topPoints[0].x} ${topPoints[0].y}`;
+            for (let i = 1; i < topPoints.length; i++) {
+                dComfort += ` L ${topPoints[i].x} ${topPoints[i].y}`;
+            }
+            for (let i = bottomPoints.length - 1; i >= 0; i--) {
+                dComfort += ` L ${bottomPoints[i].x} ${bottomPoints[i].y}`;
+            }
+            dComfort += " Z";
+
+            const pathComfort = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathComfort.setAttribute('id', `polygon-comfort`);
+            pathComfort.setAttribute('d', dComfort);
+            pathComfort.setAttribute('class', 'svg-zone-polygon');
+            pathComfort.setAttribute('fill', zoneComfort.bgColor);
+            pathComfort.setAttribute('stroke', zoneComfort.borderColor);
+            attachPolygonEvents(pathComfort, zoneComfort);
+            zonesGroup.appendChild(pathComfort);
+
+            // 2. Draw Ventilation zone (with Comfort zone subtracted)
+            const zoneVent = givoniZones.find(z => z.id === 'ventilation');
+            let dVent = getSubtractedVentilationPath();
+            
+            const pathVent = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathVent.setAttribute('id', `polygon-ventilation`);
+            pathVent.setAttribute('d', dVent);
+            pathVent.setAttribute('class', 'svg-zone-polygon');
+            pathVent.setAttribute('fill', zoneVent.bgColor);
+            pathVent.setAttribute('stroke', zoneVent.borderColor);
+            attachPolygonEvents(pathVent, zoneVent);
+            zonesGroup.appendChild(pathVent);
+        }
+
+        // Build dynamic interactive legend
+        function renderLegend() {
+            const legendGrid = document.getElementById('chart-legend');
+            legendGrid.innerHTML = '';
+
+            givoniZones.filter(z => z.id === 'comfort' || z.id === 'ventilation').forEach(zone => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.id = `legend-${zone.id}`;
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = zone.color;
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'legend-text';
+                textSpan.textContent = zone.name;
+
+                item.appendChild(colorBox);
+                item.appendChild(textSpan);
+                
+                // Hovering highlighting of SVG polygons
+                item.addEventListener('mouseenter', () => {
+                    document.querySelectorAll('.svg-zone-polygon').forEach(p => {
+                        if (p.id === `polygon-${zone.id}`) {
+                            p.style.fillOpacity = '0.75';
+                            p.style.strokeWidth = '3.5px';
+                        } else {
+                            p.style.opacity = '0.15';
+                        }
+                    });
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    document.querySelectorAll('.svg-zone-polygon').forEach(p => {
+                        p.style.fillOpacity = '';
+                        p.style.strokeWidth = '';
+                        p.style.opacity = '';
+                    });
+                });
+                
+                // Click sets to zone center
+                item.addEventListener('click', () => {
+                    const centerT = (zone.tMin + zone.tMax) / 2;
+                    const centerRH = (zone.rhMin + zone.rhMax) / 2;
+                    updateState(centerT, centerRH);
+                });
+
+                legendGrid.appendChild(item);
+            });
+        }
+
+        // Core dynamic update routine
+        function updateState(temp, hum) {
+            activeTemp = parseFloat(temp);
+            activeHum = parseInt(hum);
+
+            // Update UI slider values
+            document.getElementById('temp-val').textContent = `${activeTemp.toFixed(1)} °C`;
+            document.getElementById('hum-val').textContent = `${activeHum} %`;
+            document.getElementById('temp-slider').value = activeTemp;
+            document.getElementById('hum-slider').value = activeHum;
+
+            // Calculate moisture parameters
+            const xVal = calcX(activeTemp, activeHum);
+            
+            // Move pointer on chart SVG
+            const pointerX = toSvgX(activeTemp);
+            const pointerY = toSvgY(xVal);
+            
+            const pointer = document.getElementById('active-pointer');
+            const ring = document.getElementById('pulse-ring');
+            pointer.setAttribute('cx', pointerX);
+            pointer.setAttribute('cy', pointerY);
+            ring.setAttribute('cx', pointerX);
+            ring.setAttribute('cy', pointerY);
+
+            // Identify active Givoni Zone
+            const activeZone = checkActiveZone(activeTemp, activeHum, xVal);
+
+            // Highlight active legend item, reset others
+            document.querySelectorAll('.legend-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeLegend = document.getElementById(`legend-${activeZone.id}`);
+            if (activeLegend) activeLegend.classList.add('active');
+
+            // Stylize the SVG polygons
+            document.querySelectorAll('.svg-zone-polygon').forEach(poly => {
+                if (poly.id === `polygon-${activeZone.id}`) {
+                    poly.setAttribute('stroke-width', '3');
+                    poly.style.fillOpacity = '0.65'; // Glowing active state
+                } else {
+                    poly.setAttribute('stroke-width', '1.5');
+                    poly.style.fillOpacity = '0.35'; // Clear contrast baseline
+                }
+            });
+
+            // Update Diagnostic Card
+            const card = document.getElementById('diag-card');
+            const status = document.getElementById('diag-status');
+            const title = document.getElementById('diag-title');
+            const desc = document.getElementById('diag-desc');
+            const action = document.getElementById('diag-action');
+            
+            status.textContent = activeZone.statusText;
+            status.style.color = activeZone.color;
+            title.textContent = activeZone.name;
+            desc.textContent = activeZone.desc;
+            action.textContent = activeZone.action;
+            action.style.borderLeftColor = activeZone.color;
+
+            // Diagnostic card soft accent border
+            card.style.borderColor = activeZone.borderColor;
+            card.style.boxShadow = 'var(--card-shadow)';
+            
+            // Dynamic Fan animation controls
+            const fanIcon = document.getElementById('sim-fan-icon');
+            const fanLabel = document.getElementById('fan-sim-state');
+            const fanDesc = document.getElementById('fan-sim-effect');
+
+            fanIcon.className = 'fan-icon-svg'; // Reset
+            fanIcon.style.fill = activeZone.color;
+
+            if (activeZone.fanSpeed === 'off') {
+                fanIcon.classList.add('fan-spin-off');
+            } else if (activeZone.fanSpeed === 'slow') {
+                fanIcon.classList.add('fan-spin-slow');
+            } else if (activeZone.fanSpeed === 'slow-reverse') {
+                fanIcon.classList.add('fan-spin-slow');
+                fanIcon.style.transform = 'scaleY(-1)'; // visual inverse representation
+            } else if (activeZone.fanSpeed === 'medium') {
+                fanIcon.classList.add('fan-spin-medium');
+            } else if (activeZone.fanSpeed === 'fast') {
+                fanIcon.classList.add('fan-spin-fast');
+            }
+
+            fanLabel.textContent = activeZone.fanLabel;
+            fanDesc.textContent = activeZone.fanDesc;
+        }
+
+        // Tap/Click interaction on psychrometric chart SVG
+        function handleChartInteraction(e) {
+            const svg = document.getElementById('givoni-svg');
+            const rect = svg.getBoundingClientRect();
+            
+            // Relative coordinates on SVG viewBox coordinates (0 to 800)
+            const mouseX = ((e.clientX - rect.left) / rect.width) * svgW;
+            const mouseY = ((e.clientY - rect.top) / rect.height) * svgH;
+
+            // Ensure mouse is inside plot borders
+            if (mouseX >= mLeft && mouseX <= svgW - mRight && mouseY >= mTop && mouseY <= svgH - mBottom) {
+                const T = fromSvgX(mouseX);
+                const xVal = fromSvgY(mouseY);
+                const rh = calcRH(T, xVal);
+
+                // Bound sliders values safely
+                const boundedT = Math.min(T_MAX, Math.max(T_MIN, T));
+                const boundedRH = Math.min(100, Math.max(10, rh));
+
+                updateState(boundedT.toFixed(1), Math.round(boundedRH));
+            }
+        }
+
+        // Setup chart event listeners for dragging
+        let isDragging = false;
+        const svgElement = document.getElementById('givoni-svg');
+        const tooltip = document.getElementById('chart-tooltip');
+
+        svgElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            handleChartInteraction(e);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        svgElement.addEventListener('mousemove', (e) => {
+            const rect = svgElement.getBoundingClientRect();
+            const mouseX = ((e.clientX - rect.left) / rect.width) * svgW;
+            const mouseY = ((e.clientY - rect.top) / rect.height) * svgH;
+
+            // Handle tooltip display
+            if (mouseX >= mLeft && mouseX <= svgW - mRight && mouseY >= mTop && mouseY <= svgH - mBottom) {
+                const T = fromSvgX(mouseX);
+                const xVal = fromSvgY(mouseY);
+                const rh = calcRH(T, xVal);
+
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${e.clientX - rect.left + 15}px`;
+                tooltip.style.top = `${e.clientY - rect.top + 15}px`;
+                tooltip.textContent = `${T.toFixed(1)}°C, ${Math.round(rh)}% HR (${xVal.toFixed(1)}g/kg)`;
+            } else {
+                tooltip.style.display = 'none';
+            }
+
+            if (isDragging) {
+                handleChartInteraction(e);
+            }
+        });
+
+        svgElement.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+            isDragging = false;
+        });
+
+        // Touch event support for mobile
+        svgElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                handleChartInteraction(e.touches[0]);
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        svgElement.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                handleChartInteraction(e.touches[0]);
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        svgElement.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Sliders change event listeners
+        document.getElementById('temp-slider').addEventListener('input', (e) => {
+            updateState(e.target.value, activeHum);
+        });
+
+        document.getElementById('hum-slider').addEventListener('input', (e) => {
+            updateState(activeTemp, e.target.value);
+        });
+
+        // Tabs switcher
+        function switchTab(btn, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Theme switching logic matching index.html
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            const icon = themeBtn.querySelector('.theme-icon');
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('brasse-theme', 'dark');
+                if (icon) icon.textContent = '🌙';
+                activeTheme = 'dark';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('brasse-theme', 'light');
+                if (icon) icon.textContent = '☀️';
+                activeTheme = 'light';
+            }
+            // Trigger redrawing to adjust grid line opacity or dynamic styles
+            renderPsychrometricChart();
+            renderComfortZones();
+            updateState(activeTemp, activeHum);
+        });
+
+        // Initialize logo spin animation matching index.html
+        function initLogoSpin() {
+            const logoIcon = document.querySelector('.logo-icon');
+            const logoImage = logoIcon ? logoIcon.querySelector('img') : null;
+            if (!logoIcon || !logoImage || typeof logoImage.animate !== 'function') {
+                return;
+            }
+
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return;
+            }
+
+            const animation = logoImage.animate(
+                [
+                    { transform: 'rotate(0deg)' },
+                    { transform: 'rotate(360deg)' },
+                ],
+                {
+                    duration: 12000,
+                    iterations: Infinity,
+                    easing: 'linear',
+                }
+            );
+
+            let appliedPlaybackRate = 1;
+            let currentPlaybackRate = 1;
+            let targetPlaybackRate = 1;
+            let playbackRateFrame = null;
+            let lastPlaybackFrameTime = null;
+
+            const setPlaybackRate = (rate) => {
+                appliedPlaybackRate = rate;
+                if (typeof animation.updatePlaybackRate === 'function') {
+                    animation.updatePlaybackRate(rate);
+                    return;
+                }
+
+                animation.playbackRate = rate;
+            };
+
+            const startPlaybackLoop = () => {
+                if (playbackRateFrame !== null) {
+                    return;
+                }
+
+                lastPlaybackFrameTime = null;
+                const step = (now) => {
+                    if (lastPlaybackFrameTime === null) {
+                        lastPlaybackFrameTime = now;
+                    }
+
+                    const deltaSeconds = (now - lastPlaybackFrameTime) / 1000;
+                    lastPlaybackFrameTime = now;
+                    const accelerating = targetPlaybackRate > currentPlaybackRate;
+                    const timeConstant = accelerating ? 0.16 : 1.8;
+                    const alpha = 1 - Math.exp(-deltaSeconds / timeConstant);
+
+                    currentPlaybackRate += (targetPlaybackRate - currentPlaybackRate) * alpha;
+
+                    if (Math.abs(targetPlaybackRate - currentPlaybackRate) < 0.01) {
+                        currentPlaybackRate = targetPlaybackRate;
+                    }
+
+                    setPlaybackRate(currentPlaybackRate);
+
+                    if (Math.abs(targetPlaybackRate - currentPlaybackRate) >= 0.01) {
+                        playbackRateFrame = requestAnimationFrame(step);
+                        return;
+                    }
+
+                    playbackRateFrame = null;
+                    lastPlaybackFrameTime = null;
+                };
+
+                playbackRateFrame = requestAnimationFrame(step);
+            };
+
+            const animatePlaybackRate = (targetRate) => {
+                targetPlaybackRate = targetRate;
+                currentPlaybackRate = appliedPlaybackRate;
+                startPlaybackLoop();
+            };
+
+            setPlaybackRate(1);
+            logoIcon.addEventListener('pointerenter', () => animatePlaybackRate(20));
+            logoIcon.addEventListener('pointerleave', () => animatePlaybackRate(1));
+        }
+
+        // Initial launch
+        window.addEventListener('DOMContentLoaded', () => {
+            // Theme initialization matching index.html
+            const savedTheme = localStorage.getItem('brasse-theme');
+            const icon = themeBtn ? themeBtn.querySelector('.theme-icon') : null;
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                if (icon) icon.textContent = '☀️';
+                activeTheme = 'light';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                if (icon) icon.textContent = '🌙';
+                activeTheme = 'dark';
+            }
+
+            renderPsychrometricChart();
+            renderComfortZones();
+            renderLegend();
+            updateState(activeTemp, activeHum);
+
+            // Start logo spinning
+            initLogoSpin();
+        });
+    </script>
+</body>
+</html>

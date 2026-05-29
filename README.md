@@ -114,6 +114,10 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 
 ## Historique
 
+### [0.9.2] - 2026-05-29
+
+- Ajout de la page pédagogique interactive `givoni.html` présentant le Diagramme bioclimatique de Givoni interactif.
+
 ### [0.9.1] - 2026-05-29
 
 - Remplacement du mode « Zone de couchage contre un mur » par un sélecteur du nombre de brasseurs, de 1 jusqu'au nombre optimal calculé.
