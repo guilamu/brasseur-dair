@@ -5,9 +5,6 @@
 // ── Constants ──────────────────────────────────────
 const MARKET_DIAMETERS_CM = [70, 80, 90, 103, 107, 112, 122, 127, 132, 142, 152, 166];
 const EPSILON = 1e-9;
-const BED_MODE_DEFAULTS = {
-    targetSquareSize: 2.5,
-};
 const FORM_FACTOR_TOOLTIP = "Rapport entre la plus grande et la plus petite dimension d'une zone. Plus il est proche de 1, plus la zone est proche d'un carré et plus la diffusion de l'air a des chances d'être régulière.";
 const MOUNTING_TOOLTIPS = {
     Standard: "Montage de référence avec une retombée d'environ 0,35 fois le diamètre. C'est le cas le plus favorable pour la performance.",
@@ -23,10 +20,6 @@ const USAGE_DATA = {
     sport:    { label: "Sport / Activités soutenues", met: 1.5,  vMin: 1.3, vMax: 2.0, dbaMin: 38, dbaMax: 48 },
 };
 
-function usageAllowsCoverageMode(usage) {
-    return usage === 'chambre' || usage === 'sejour';
-}
-
 // Approximate CE (°C) for given air speed (m/s)
 // Based on BRASSE conditions: T=28°C, HR=60%, met=1.1, clo=0.5
 function estimateCE(vAir) {
@@ -38,13 +31,8 @@ function estimateCE(vAir) {
 // ── Main Calculation Engine ───────────────────────
 
 function calculate(roomL, roomW, HSP, usage, userDiameterCm, options = {}) {
-    const requestedCoverageMode = options.coverageMode || 'uniform';
-    const coverageMode = usageAllowsCoverageMode(usage) ? requestedCoverageMode : 'uniform';
-    if (coverageMode === 'bed-wall') {
-        return calculateBedWallMode(roomL, roomW, HSP, usage, userDiameterCm, options);
-    }
-
-    return calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm);
+    const targetFanCount = options.targetFanCount || null;
+    return calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm, targetFanCount);
 }
 
 function calculateDiagnostic(roomL, roomW, HSP, usage, userDiameterCm, options = {}) {
@@ -52,16 +40,11 @@ function calculateDiagnostic(roomL, roomW, HSP, usage, userDiameterCm, options =
         return { error: "Aucun diamètre manuel à diagnostiquer." };
     }
 
-    const requestedCoverageMode = options.coverageMode || 'uniform';
-    const coverageMode = usageAllowsCoverageMode(usage) ? requestedCoverageMode : 'uniform';
-    if (coverageMode === 'bed-wall') {
-        return calculateBedWallDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm, options);
-    }
-
-    return calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm);
+    const targetFanCount = options.targetFanCount || null;
+    return calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm, targetFanCount);
 }
 
-function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm) {
+function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm, targetFanCount = null) {
     // Normalize: L >= W
     const L = Math.max(roomL, roomW);
     const W = Math.min(roomL, roomW);
@@ -74,6 +57,8 @@ function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm) {
     // Try different cell configurations: Nx divisions along L, Ny along W
     for (let nx = 1; nx <= 6; nx++) {
         for (let ny = 1; ny <= 6; ny++) {
+            if (targetFanCount !== null && nx * ny !== targetFanCount) continue;
+
             const cellL = L / nx;
             const cellW = W / ny;
             const cellArea = cellL * cellW;
@@ -81,8 +66,9 @@ function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm) {
             const ffCell = Math.max(cellL, cellW) / Math.min(cellL, cellW);
 
             // Skip configurations that violate shape or size guidelines
-            if (ffCell >= 1.41) continue; // Rule 2: FF must be < 1.41
-            if (nx * ny > 12) continue; // Fragmented
+            // When targetFanCount is set, relax FF constraint (penalize instead of skip)
+            if (targetFanCount === null && ffCell >= 1.41) continue;
+            if (nx * ny > 12) continue;
             if (cellL < 1.5 || cellW < 1.5) continue;
 
             // ── Compute D_max from all constraints ──
@@ -127,11 +113,12 @@ function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm) {
             if (!wallOk || !interOk || !hPalesOk) continue;
 
             // Score: balance between mounting quality and diameter size
-            // Standard gets a bonus, but not so large it forces tiny diameters.
-            // D*1000 makes diameter the primary factor (range ~700-1660)
-            // Standard bonus of 200 means we prefer standard only if D difference is <20cm
             const mountingBonus = mounting.mountingType === "Standard" ? 200 : 0;
-            const score = mountingBonus + D * 1000 + (2 - ffCell) * 50 - (nx * ny) * 10;
+            let ffPenalty = 0;
+            if (ffCell >= 1.41) {
+                ffPenalty = -(ffCell - 1.41) * 500;
+            }
+            const score = mountingBonus + D * 1000 + (2 - ffCell) * 50 - (nx * ny) * 10 + ffPenalty;
 
             if (score > bestScore) {
                 bestScore = score;
@@ -177,7 +164,7 @@ function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm) {
     return finalizeResult(bestConfig, usageData);
 }
 
-function calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm) {
+function calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm, targetFanCount = null) {
     const L = Math.max(roomL, roomW);
     const W = Math.min(roomL, roomW);
     const usageData = USAGE_DATA[usage];
@@ -188,6 +175,8 @@ function calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm
 
     for (let nx = 1; nx <= 6; nx++) {
         for (let ny = 1; ny <= 6; ny++) {
+            if (targetFanCount !== null && nx * ny !== targetFanCount) continue;
+
             const cellL = L / nx;
             const cellW = W / ny;
             const cellArea = cellL * cellW;
@@ -284,128 +273,6 @@ function calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm
     return finalizeResult(bestConfig, usageData);
 }
 
-function calculateBedWallMode(roomL, roomW, HSP, usage, userDiameterCm, options) {
-    const L = Math.max(roomL, roomW);
-    const W = Math.min(roomL, roomW);
-    const usageData = USAGE_DATA[usage];
-    const userD = userDiameterCm ? userDiameterCm / 100 : null;
-    const targetZone = buildBedWallTargetZone(L, W, options);
-    const cellArea = targetZone.rect.width * targetZone.rect.height;
-    const sqrtArea = Math.sqrt(cellArea);
-    const ffCell = Math.max(targetZone.rect.width, targetZone.rect.height) / Math.min(targetZone.rect.width, targetZone.rect.height);
-    const dMinFCC = 0.2 * sqrtArea;
-    const dMaxFCC = 0.4 * sqrtArea;
-    const wallDistances = computeWallDistances(L, W, targetZone.fanCenter);
-    const dMaxWall = getMinWallDistance(wallDistances);
-    const dMaxHeight = resolveHeightLimit(HSP);
-    const dMax = Math.min(dMaxFCC, dMaxWall, dMaxHeight);
-
-    if (dMax < dMinFCC || dMax <= 0) {
-        return { error: "La zone de couchage choisie ne permet pas un diamètre cohérent. Réduisez la zone ciblée ou déplacez l'axe du couchage." };
-    }
-
-    const diameterChoice = resolveDiameterChoice(dMinFCC, dMax, userD);
-    if (!diameterChoice) {
-        return { error: "Le diamètre saisi ne respecte pas les contraintes de la zone de couchage ciblée." };
-    }
-
-    const mounting = resolveMounting(diameterChoice.D, HSP);
-    if (!mounting) {
-        return { error: "Hauteur insuffisante pour positionner ce ventilateur au-dessus de la zone de couchage." };
-    }
-
-    return finalizeResult({
-        coverageMode: 'bed-wall',
-        nx: 1,
-        ny: 1,
-        numFans: 1,
-        cellL: targetZone.rect.width,
-        cellW: targetZone.rect.height,
-        cellArea,
-        ffCell,
-        D: diameterChoice.D,
-        dCm: Math.round(diameterChoice.D * 100),
-        dMax,
-        fcc: diameterChoice.D / sqrtArea,
-        dMaxFCC,
-        dMinFCC,
-        dMaxWall,
-        dMaxInter: null,
-        dMaxHeight,
-        distWall: dMaxWall,
-        wallDistances,
-        wallOk: dMaxWall + EPSILON >= diameterChoice.D,
-        interDist: null,
-        interOk: true,
-        ...mounting,
-        marketDiameterCm: diameterChoice.marketDiameterCm,
-        L,
-        W,
-        HSP,
-        usageKey: usage,
-        fanPositions: [targetZone.fanCenter],
-        targetZoneRect: targetZone.rect,
-        targetZoneName: targetZone.name,
-        localComfortOnly: true,
-        manualDiameterCm: userDiameterCm || null,
-    }, usageData);
-}
-
-function calculateBedWallDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm, options) {
-    const L = Math.max(roomL, roomW);
-    const W = Math.min(roomL, roomW);
-    const usageData = USAGE_DATA[usage];
-    const userD = userDiameterCm / 100;
-    const targetZone = buildBedWallTargetZone(L, W, options);
-    const cellArea = targetZone.rect.width * targetZone.rect.height;
-    const sqrtArea = Math.sqrt(cellArea);
-    const ffCell = Math.max(targetZone.rect.width, targetZone.rect.height) / Math.min(targetZone.rect.width, targetZone.rect.height);
-    const dMinFCC = 0.2 * sqrtArea;
-    const dMaxFCC = 0.4 * sqrtArea;
-    const wallDistances = computeWallDistances(L, W, targetZone.fanCenter);
-    const dMaxWall = getMinWallDistance(wallDistances);
-    const dMaxHeight = resolveHeightLimit(HSP);
-    const dMax = Math.min(dMaxFCC, dMaxWall, dMaxHeight);
-    const mounting = resolveMounting(userD, HSP, { allowInvalid: true });
-
-    return finalizeResult({
-        coverageMode: 'bed-wall',
-        nx: 1,
-        ny: 1,
-        numFans: 1,
-        cellL: targetZone.rect.width,
-        cellW: targetZone.rect.height,
-        cellArea,
-        ffCell,
-        D: userD,
-        dCm: Math.round(userD * 100),
-        dMax,
-        fcc: userD / sqrtArea,
-        dMaxFCC,
-        dMinFCC,
-        dMaxWall,
-        dMaxInter: null,
-        dMaxHeight,
-        distWall: dMaxWall,
-        wallDistances,
-        wallOk: dMaxWall + EPSILON >= userD,
-        interDist: null,
-        interOk: true,
-        ...mounting,
-        marketDiameterCm: findLargestCompatibleMarketDiameter(dMinFCC, Math.max(dMax, 0)),
-        L,
-        W,
-        HSP,
-        usageKey: usage,
-        fanPositions: [targetZone.fanCenter],
-        targetZoneRect: targetZone.rect,
-        targetZoneName: targetZone.name,
-        localComfortOnly: true,
-        manualDiameterCm: userDiameterCm,
-        isDiagnostic: true,
-    }, usageData);
-}
-
 function finalizeResult(config, usageData) {
     config.usage = usageData;
 
@@ -414,41 +281,6 @@ function finalizeResult(config, usageData) {
     config.vAirEstimate = vAirEstimate;
     config.ceEstimate = estimateCE(vAirEstimate);
     return config;
-}
-
-function buildBedWallTargetZone(L, W, options) {
-    const side = Math.min(
-        Number.isFinite(options.targetSquareSize) ? options.targetSquareSize : BED_MODE_DEFAULTS.targetSquareSize,
-        L,
-        W,
-    );
-
-    return {
-        name: `Zone type ${formatMeters(side)} x ${formatMeters(side)} m contre un mur`,
-        rect: {
-            x: 0,
-            y: (W - side) / 2,
-            width: side,
-            height: side,
-        },
-        fanCenter: {
-            x: side / 2,
-            y: W / 2,
-        },
-    };
-}
-
-function computeWallDistances(L, W, center) {
-    return {
-        left: center.x,
-        right: L - center.x,
-        top: center.y,
-        bottom: W - center.y,
-    };
-}
-
-function getMinWallDistance(wallDistances) {
-    return Math.min(wallDistances.left, wallDistances.right, wallDistances.top, wallDistances.bottom);
 }
 
 function resolveHeightLimit(HSP) {
@@ -562,20 +394,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoIcon = document.querySelector('.logo-icon');
     const logoImage = logoIcon ? logoIcon.querySelector('img') : null;
     const usageSelect = document.getElementById('room-usage');
-    const coverageModeSelect = document.getElementById('coverage-mode');
-    const coverageModeHint = document.getElementById('coverage-mode-hint');
+    const fanCountSelect = document.getElementById('fan-count');
+    const fanCountHint = document.getElementById('fan-count-hint');
     const placeholder = document.getElementById('results-placeholder');
     const resultsContent = document.getElementById('results-content');
 
+    let currentOptimalFanCount = null;
+
+    initThemeToggle();
     initLogoSpin();
 
     // Update usage info card on change
     usageSelect.addEventListener('change', () => {
         updateUsageInfo();
-        updateCoverageModeAvailability();
     });
     updateUsageInfo();
-    updateCoverageModeAvailability();
 
     // Auto-calculate as values change
     const inputs = form.querySelectorAll('input, select');
@@ -597,17 +430,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run initial calculation
     runCalculation();
 
-    function updateCoverageModeAvailability() {
-        const coverageAllowed = usageAllowsCoverageMode(usageSelect.value);
-        coverageModeSelect.disabled = !coverageAllowed;
+    function updateFanCountOptions(newOptimalCount) {
+        if (newOptimalCount === currentOptimalFanCount) return;
 
-        if (!coverageAllowed) {
-            coverageModeSelect.value = 'uniform';
-            coverageModeHint.textContent = 'La stratégie de brassage locale est disponible uniquement pour Chambre / Repos et Séjour / Activités douces.';
-            return;
+        currentOptimalFanCount = newOptimalCount;
+        fanCountSelect.innerHTML = '';
+
+        for (let i = newOptimalCount; i >= 1; i--) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i === newOptimalCount
+                ? `${i} (recommandé)`
+                : `${i}`;
+            fanCountSelect.appendChild(option);
         }
 
-        coverageModeHint.textContent = 'Le mode local applique une zone type de 2,5 × 2,5 m contre un mur avec un seul ventilateur.';
+        // Always default to recommended
+        fanCountSelect.value = newOptimalCount;
+    }
+
+    function updateFanCountHint(result) {
+        const selected = parseInt(fanCountSelect.value);
+        if (selected === currentOptimalFanCount) {
+            fanCountHint.textContent = `Configuration optimale : ${currentOptimalFanCount} brasseur(s) de ${result.dCm} cm.`;
+        } else {
+            const ffWarning = result.ffCell >= 1.41
+                ? ` Attention : cellules allongées (FF = ${result.ffCell.toFixed(2)}), la diffusion sera moins régulière.`
+                : '';
+            fanCountHint.textContent = `Avec ${selected} brasseur(s), le diamètre conseillé passe à ${result.dCm} cm.${ffWarning}`;
+        }
     }
 
     function updateUsageInfo() {
@@ -624,11 +475,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const H = parseFloat(document.getElementById('room-height').value);
         const usage = usageSelect.value;
         const fanD = document.getElementById('fan-diameter').value ? parseFloat(document.getElementById('fan-diameter').value) : null;
-        const coverageMode = coverageModeSelect.value;
 
         if (!L || !W || !H) return;
 
-        const options = { coverageMode };
+        // Phase 1: Calculate optimal (no constraints) to get the reference fan count
+        const optimalResult = calculate(L, W, H, usage, null);
+
+        if (optimalResult.error) {
+            placeholder.innerHTML = `
+                <div class="placeholder-icon">⚠️</div>
+                <p>${optimalResult.error}</p>
+            `;
+            placeholder.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
+            return;
+        }
+
+        updateFanCountOptions(optimalResult.numFans);
+
+        // Phase 2: Calculate with user constraints (fan count + optional manual diameter)
+        const selectedCount = parseInt(fanCountSelect.value);
+        const isReduced = !isNaN(selectedCount) && selectedCount < optimalResult.numFans;
+        const options = {};
+        if (isReduced) {
+            options.targetFanCount = selectedCount;
+        }
 
         let result = calculate(L, W, H, usage, fanD, options);
 
@@ -646,9 +517,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        result.optimalFanCount = optimalResult.numFans;
+        result.isReducedFanCount = isReduced;
+
         placeholder.classList.add('hidden');
         resultsContent.classList.remove('hidden');
 
+        updateFanCountHint(result);
         displayResults(result);
         drawPlanView(result);
         drawSectionView(result);
@@ -738,12 +613,40 @@ document.addEventListener('DOMContentLoaded', () => {
         logoIcon.addEventListener('pointerenter', () => animatePlaybackRate(20));
         logoIcon.addEventListener('pointerleave', () => animatePlaybackRate(1));
     }
+
+    function initThemeToggle() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        const icon = toggleBtn ? toggleBtn.querySelector('.theme-icon') : null;
+        if (!toggleBtn || !icon) return;
+
+        const saved = localStorage.getItem('brasse-theme');
+        if (saved === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            icon.textContent = '☀️';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('brasse-theme', 'dark');
+                icon.textContent = '🌙';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('brasse-theme', 'light');
+                icon.textContent = '☀️';
+            }
+            // Redraw canvases with new theme colors
+            if (form.checkValidity()) {
+                runCalculation();
+            }
+        });
+    }
 });
 
 // ── Display Results ───────────────────────────────
 
 function displayResults(r) {
-    const isBedMode = r.coverageMode === 'bed-wall';
     const constraints = buildConstraintChecks(r);
     const hasFailures = constraints.some(c => c.status === 'fail');
     const explanationSection = document.getElementById('explanation-section');
@@ -787,29 +690,13 @@ function displayResults(r) {
     // Detailed metrics
     const metricsGrid = document.getElementById('metrics-grid');
     metricsGrid.innerHTML = '';
-    const metrics = isBedMode ? [
-        ['Mode', 'Zone de couchage contre un mur'],
-        ['Surface pièce', `${(r.L * r.W).toFixed(1)} m²`],
-        ['Zone ciblée', `${formatMeters(r.targetZoneRect.width)} × ${formatMeters(r.targetZoneRect.height)} m`],
-        ['Hypothèse', 'Zone type contre un mur'],
-        ['D calculé', `${r.dCm} cm`],
-        ['D marché compatible', r.marketDiameterCm ? `${r.marketDiameterCm} cm` : 'Aucun standard disponible'],
-        ['D min (FCC=0.2)', `${(r.dMinFCC * 100).toFixed(0)} cm`],
-        ['D max (FCC=0.4)', `${(r.dMaxFCC * 100).toFixed(0)} cm`],
-        ['D max global', `${(r.dMax * 100).toFixed(0)} cm`],
-        ['Distance mur limitante', `${(r.distWall * 100).toFixed(0)} cm`],
-        ['Centre ventilateur', `${formatMeters(r.fanPositions[0].x)} ; ${formatMeters(r.fanPositions[0].y)} m`],
-        ['H montage', `${(r.hMontage * 100).toFixed(0)} cm`],
-        ['H pales (sol)', `${(r.hPales * 100).toFixed(0)} cm`],
-        ['V air estimée', `~${r.vAirEstimate.toFixed(2)} m/s`],
-        ['Perf. montage', `${(r.mountingFactor * 100).toFixed(0)}%`],
-    ] : [
+    const metrics = [
         ['Surface pièce', `${(r.L * r.W).toFixed(1)} m²`],
         ['Nb cellules', `${r.nx} × ${r.ny} = ${r.numFans}`],
         ['Dim. cellule', `${r.cellL.toFixed(2)} × ${r.cellW.toFixed(2)} m`],
         ['Surface cellule', `${r.cellArea.toFixed(1)} m²`],
-        ['D calculé', `${r.dCm} cm`],
-        ['D marché compatible', r.marketDiameterCm ? `${r.marketDiameterCm} cm` : 'Aucun standard disponible'],
+        ['D idéal', `${r.dCm} cm`],
+        ['Plage D acceptable', `${Math.ceil(r.dMinFCC * 100)} – ${Math.floor(r.dMax * 100)} cm`],
         ['D min (FCC=0.2)', `${(r.dMinFCC * 100).toFixed(0)} cm`],
         ['D max (FCC=0.4)', `${(r.dMaxFCC * 100).toFixed(0)} cm`],
         ['D max global', `${(r.dMax * 100).toFixed(0)} cm`],
@@ -818,6 +705,10 @@ function displayResults(r) {
         ['V air estimée', `~${r.vAirEstimate.toFixed(2)} m/s`],
         ['Perf. montage', `${(r.mountingFactor * 100).toFixed(0)}%`],
     ];
+
+    if (r.isReducedFanCount) {
+        metrics.unshift(['Choix utilisateur', `${r.numFans} / ${r.optimalFanCount} optimal`]);
+    }
 
     metrics.forEach(([label, value]) => {
         const div = document.createElement('div');
@@ -829,30 +720,50 @@ function displayResults(r) {
         metricsGrid.appendChild(div);
     });
 
-    // Market diameters
-    const marketGrid = document.getElementById('market-diameters');
-    marketGrid.innerHTML = '';
-    MARKET_DIAMETERS_CM.forEach(d => {
-        const dm = d / 100;
-        let cls = 'market-chip';
-        if (d === r.marketDiameterCm) {
-            cls += ' recommended';
-        } else if (dm + EPSILON < r.dMinFCC) {
-            cls += ' too-small';
-        } else if (dm - EPSILON > r.dMax) {
-            cls += ' too-big';
-        }
-        const chip = document.createElement('div');
-        chip.className = cls;
-        chip.textContent = `${d} cm`;
-        if (d === r.marketDiameterCm) chip.textContent += ' ✓';
-        marketGrid.appendChild(chip);
-    });
+    // Diameter recommendation
+    const recDiv = document.getElementById('diameter-recommendation');
+    const dMinCm = Math.ceil(r.dMinFCC * 100);
+    const dMaxCm = Math.floor(r.dMax * 100);
+    const idealCm = Math.max(dMinCm, Math.min(r.dCm, dMaxCm));
+    const sliderDisabled = dMinCm >= dMaxCm;
+
+    recDiv.innerHTML = `
+        <div class="diameter-ideal-display">
+            <span class="diameter-ideal-number">${idealCm}</span>
+            <span class="diameter-ideal-unit">cm</span>
+        </div>
+        <div class="diameter-range-info">Plage acceptable : ${dMinCm} – ${dMaxCm} cm</div>
+        <div class="diameter-range-bar-container">
+            <input type="range" class="diameter-slider" min="${dMinCm}" max="${dMaxCm}" value="${idealCm}" step="1"${sliderDisabled ? ' disabled' : ''}>
+            <div class="diameter-range-endpoints">
+                <span>${dMinCm} cm</span>
+                <span>${dMaxCm} cm</span>
+            </div>
+        </div>
+    `;
+
+    if (!sliderDisabled) {
+        const slider = recDiv.querySelector('.diameter-slider');
+        const numberDisplay = recDiv.querySelector('.diameter-ideal-number');
+        const fanDiameterInput = document.getElementById('fan-diameter');
+
+        slider.addEventListener('input', () => {
+            numberDisplay.textContent = slider.value;
+            fanDiameterInput.value = slider.value;
+        });
+
+        slider.addEventListener('change', () => {
+            fanDiameterInput.value = slider.value;
+            fanDiameterInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    }
 }
 
 function buildResultExplanation(r) {
-    if (r.coverageMode === 'bed-wall') {
-        return buildBedWallExplanation(r);
+    const paragraphs = [];
+
+    if (r.isReducedFanCount) {
+        paragraphs.push(`Vous avez choisi de réduire le nombre de brasseurs de ${r.optimalFanCount} (optimal) à ${r.numFans}. Ce choix augmente la taille des cellules de couverture et nécessite un diamètre plus important par brasseur.`);
     }
 
     const roomFF = r.L / r.W;
@@ -868,78 +779,31 @@ function buildResultExplanation(r) {
         ? `Le brasseur est placé au centre de la pièce, à la position (${formatMeters(r.fanPositions[0].x)} m ; ${formatMeters(r.fanPositions[0].y)} m). Cette position centrée maximise la symétrie de diffusion et laisse ${formatMeters(r.distWall)} m jusqu'au mur le plus proche.`
         : `Chaque brasseur est placé au centre de sa cellule pour respecter la règle de symétrie. En lisant le plan de gauche à droite, cela donne : ${positions}. La distance au mur la plus faible vaut ${formatMeters(r.distWall)} m et l'entraxe minimal entre deux brasseurs vaut ${formatMeters(r.interDist)} m.`;
 
-    const diameterExplanation = `Le diamètre calculé retenu par l'application est de ${r.dCm} cm. Pour cette surface à ventiler, un diamètre cohérent se situe ici entre ${(r.dMinFCC * 100).toFixed(0)} cm et ${(r.dMaxFCC * 100).toFixed(0)} cm. Le diamètre maximal global est de ${(r.dMax * 100).toFixed(0)} cm, limité principalement par ${describeLimitingConstraints(r)}.`;
+    const diameterExplanation = `Le diamètre calculé retenu par l'application est de ${r.dCm} cm. Pour cette surface à ventiler, un diamètre cohérent se situe ici entre ${Math.ceil(r.dMinFCC * 100)} cm et ${Math.floor(r.dMaxFCC * 100)} cm. Le diamètre maximal global est de ${Math.floor(r.dMax * 100)} cm, limité principalement par ${describeLimitingConstraints(r)}.`;
 
-    const marketExplanation = r.marketDiameterCm
-        ? `Pour passer à un produit standard du marché sans dépasser les contraintes, le diamètre compatible le plus proche est ${r.marketDiameterCm} cm.`
-        : `Aucun diamètre standard de la base marché ne rentre exactement dans l'enveloppe calculée. Il faut alors viser un modèle spécifique ou reprendre les hypothèses de découpage.`;
+    const marketExplanation = `Tout diamètre compris entre ${Math.ceil(r.dMinFCC * 100)} cm et ${Math.floor(r.dMax * 100)} cm convient. L'application retient le diamètre le plus grand possible (${r.dCm} cm) pour maximiser le confort.`;
 
     const mountingExplanation = `Le montage retenu est ${buildMountingTooltip(r.mountingType)}. Le plan de rotation des pâles est positionné à ${(r.hPales * 100).toFixed(0)} cm du sol et à ${(r.hMontage * 100).toFixed(0)} cm sous le plafond. Cette implantation respecte la hauteur minimale de sécurité de ${(r.securityHeight * 100).toFixed(0)} cm et ${r.mountingType === 'Standard' ? 'conserve la distance de montage optimale de référence' : 'abaisse les pâles au plus bas autorisé pour préserver au mieux la performance'}.`;
 
     const performanceExplanation = `Avec cette configuration, l'application estime une vitesse d'air moyenne d'environ ${formatNumber(r.vAirEstimate)} m/s pour un effet rafraîchissant proche de ${formatNumber(r.ceEstimate)} °C. Le niveau de performance de montage retenu est de ${(r.mountingFactor * 100).toFixed(0)}%.`;
 
-    return [
+    paragraphs.push(
         cellExplanation,
         placementExplanation,
-        diameterExplanation + ' ' + marketExplanation,
+        diameterExplanation,
+        marketExplanation,
         mountingExplanation,
         performanceExplanation,
-    ].map(paragraph => `<p>${paragraph}</p>`).join('');
+    );
+
+    return paragraphs.map(paragraph => `<p>${paragraph}</p>`).join('');
 }
 
 function buildConstraintChecks(r) {
-    const isBedMode = r.coverageMode === 'bed-wall';
     const hPalesDetail = r.D < 2.13 ? `≥ 213 cm` : `[max(3m; 0,8D) – 1,2D]`;
     const hMontageMinAllowed = r.hMontageMinAllowed || 0.25 * r.D;
 
-    if (isBedMode) {
-        return [
-            {
-                id: 'fcc',
-                label: `FCC (zone ciblée)`,
-                value: r.fcc.toFixed(2),
-                status: (r.fcc >= 0.2 && r.fcc <= 0.4) ? 'pass' : 'fail',
-                detail: `[0,20 – 0,40]`
-            },
-            {
-                id: 'ff',
-                label: `Allongement de la zone cible`,
-                value: r.ffCell.toFixed(2),
-                status: r.ffCell <= 1.41 ? 'pass' : 'warn',
-                detail: `plus faible = plus enveloppant`
-            },
-            {
-                id: 'wall',
-                label: `Distance aux murs depuis le centre`,
-                value: `${(r.distWall * 100).toFixed(0)} cm > ${r.dCm} cm`,
-                status: r.wallOk ? 'pass' : 'fail',
-                detail: `paroi la plus proche`
-            },
-            {
-                id: 'local-mode',
-                label: `Mode local assumé`,
-                value: `${formatMeters(r.targetZoneRect.width)} × ${formatMeters(r.targetZoneRect.height)} m`,
-                status: 'pass',
-                detail: `1 seul ventilateur sur une zone type contre un mur`
-            },
-            {
-                id: 'mounting',
-                label: `Distance de montage`,
-                value: `${(r.hMontage * 100).toFixed(0)} cm (${r.mountingType})`,
-                status: r.hMontage + EPSILON >= hMontageMinAllowed ? 'pass' : 'fail',
-                detail: `[0,25D – 0,35D]`
-            },
-            {
-                id: 'blade-height',
-                label: `Hauteur des pales`,
-                value: `${(r.hPales * 100).toFixed(0)} cm`,
-                status: r.hPalesOk ? 'pass' : 'fail',
-                detail: hPalesDetail
-            },
-        ];
-    }
-
-    return [
+    const constraints = [
         {
             id: 'fcc',
             label: `FCC (facteur de couverture)`,
@@ -951,7 +815,7 @@ function buildConstraintChecks(r) {
             id: 'ff',
             label: `FF (facteur de forme cellule)`,
             value: r.ffCell.toFixed(2),
-            status: r.ffCell < 1.41 ? 'pass' : 'fail',
+            status: r.ffCell < 1.41 ? 'pass' : (r.isReducedFanCount ? 'warn' : 'fail'),
             detail: `< 1,41 (√2)`
         },
         {
@@ -983,6 +847,18 @@ function buildConstraintChecks(r) {
             detail: hPalesDetail
         },
     ];
+
+    if (r.isReducedFanCount) {
+        constraints.unshift({
+            id: 'fan-count',
+            label: `Nombre de brasseurs réduit`,
+            value: `${r.numFans} / ${r.optimalFanCount} optimal`,
+            status: 'warn',
+            detail: `choix utilisateur`
+        });
+    }
+
+    return constraints;
 }
 
 function getConstraintFailureLabels(r) {
@@ -991,9 +867,7 @@ function getConstraintFailureLabels(r) {
         .map(item => {
             switch (item.id) {
                 case 'fcc':
-                    return r.coverageMode === 'bed-wall'
-                        ? 'Diamètre hors plage pour la zone ciblée'
-                        : 'Diamètre hors plage pour la surface traitée';
+                    return 'Diamètre hors plage pour la surface traitée';
                 case 'ff':
                     return 'Cellule trop allongée';
                 case 'wall':
@@ -1010,23 +884,9 @@ function getConstraintFailureLabels(r) {
         });
 }
 
-function buildBedWallExplanation(r) {
-    const fanCenter = r.fanPositions[0];
-    const performanceExplanation = `Avec cette configuration, l'application estime une vitesse d'air moyenne d'environ ${formatNumber(r.vAirEstimate)} m/s pour un effet rafraîchissant proche de ${formatNumber(r.ceEstimate)} °C. Le niveau de performance de montage retenu est de ${(r.mountingFactor * 100).toFixed(0)}%.`;
-
-    return [
-        `L'application est en mode confort local : elle ne cherche pas à ventiler uniformément toute la pièce, mais seulement la zone de couchage utile.`,
-        `Ce mode applique une hypothèse simple de calcul : une zone type de ${formatMeters(r.targetZoneRect.width)} m x ${formatMeters(r.targetZoneRect.height)} m positionnée contre un mur, avec un seul ventilateur. Le schéma affiché est indicatif et sert uniquement au dimensionnement.`,
-        `Un seul brasseur est donc retenu. Son centre de calcul est placé en (${formatMeters(fanCenter.x)} m ; ${formatMeters(fanCenter.y)} m) sur ce schéma type. La distance minimale à une paroi est de ${formatMeters(r.distWall)} m et la contrainte limitante est ${describeLimitingConstraints(r)}.`,
-        `Le diamètre calculé est de ${r.dCm} cm. Pour cette zone type, un diamètre adapté se situe ici entre ${(r.dMinFCC * 100).toFixed(0)} cm et ${(r.dMaxFCC * 100).toFixed(0)} cm. Si l'on bascule sur un diamètre standard du marché sans dépasser les contraintes, le plus grand diamètre compatible est ${r.marketDiameterCm ? `${r.marketDiameterCm} cm` : 'non disponible dans la base actuelle'}.`,
-        `Le montage retenu est ${buildMountingTooltip(r.mountingType)}. Les pâles sont positionnées à ${(r.hPales * 100).toFixed(0)} cm du sol et à ${(r.hMontage * 100).toFixed(0)} cm sous le plafond. ${r.mountingType === 'Standard' ? 'La retombée reste dans la plage optimale.' : 'Comme le standard n\'est pas atteignable, l\'app place les pâles au plus bas autorisé pour conserver un bon brassage.'} Cette estimation est calculée sur la zone ciblée.`,
-        performanceExplanation,
-    ].map(paragraph => `<p>${paragraph}</p>`).join('');
-}
-
 function describeLimitingConstraints(r) {
     const constraints = [
-        { label: r.coverageMode === 'bed-wall' ? 'la taille de la zone à ventiler' : 'la taille de la surface à ventiler', value: r.dMaxFCC },
+        { label: 'la taille de la surface à ventiler', value: r.dMaxFCC },
         { label: 'la distance aux murs', value: r.dMaxWall },
         { label: 'la distance entre brasseurs', value: r.dMaxInter },
         { label: 'la hauteur disponible', value: r.dMaxHeight },
@@ -1067,12 +927,48 @@ function buildMountingTooltip(mountingType) {
     return tooltip ? buildTooltip(mountingType, tooltip) : escapeHtml(mountingType);
 }
 
+// ── Canvas Theme Helper ───────────────────────────
+
+function getCanvasColors() {
+    const s = getComputedStyle(document.documentElement);
+    const v = (name) => s.getPropertyValue(name).trim();
+    return {
+        bg: v('--canvas-bg'),
+        roomFill: v('--canvas-room-fill'),
+        roomStroke: v('--canvas-room-stroke'),
+        grid: v('--canvas-grid'),
+        fanFill: v('--canvas-fan-fill'),
+        fanStroke: v('--canvas-fan-stroke'),
+        fanBladeFill: v('--canvas-fan-blade-fill'),
+        fanBladeStroke: v('--canvas-fan-blade-stroke'),
+        fanDot: v('--canvas-fan-dot'),
+        dimColor: v('--canvas-dim-color'),
+        wallColor: v('--canvas-wall-color'),
+        floor: v('--canvas-floor'),
+        rod: v('--canvas-rod'),
+        body: v('--canvas-body'),
+        bladeOk: v('--canvas-blade-ok'),
+        flow: v('--canvas-flow'),
+        secLine: v('--canvas-sec-line'),
+        secText: v('--canvas-sec-text'),
+        secFill: v('--canvas-sec-fill'),
+        labelMuted: v('--canvas-label-muted'),
+        diagBg: v('--canvas-diag-bg'),
+        diagBorder: v('--canvas-diag-border'),
+        diagText: v('--canvas-diag-text'),
+        accent: v('--accent'),
+        red: v('--red'),
+        orange: v('--orange'),
+    };
+}
+
 // ── Canvas Drawing: Plan View ─────────────────────
 
 function drawPlanView(r) {
     const canvas = document.getElementById('canvas-plan');
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
+    const C = getCanvasColors();
 
     // Canvas sizing
     const displayW = canvas.parentElement.clientWidth - 24;
@@ -1084,7 +980,7 @@ function drawPlanView(r) {
     ctx.scale(dpr, dpr);
 
     // Clear
-    ctx.fillStyle = '#12141e';
+    ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, displayW, displayH);
 
     // Margins for dimension labels
@@ -1106,50 +1002,34 @@ function drawPlanView(r) {
     const toCanvasY = (y) => offsetY + y * scale;
 
     // ── Draw room outline ──
-    ctx.strokeStyle = '#3a3f5a';
+    ctx.strokeStyle = C.roomStroke;
     ctx.lineWidth = 2;
-    ctx.fillStyle = '#181c2a';
+    ctx.fillStyle = C.roomFill;
     ctx.beginPath();
     ctx.rect(offsetX, offsetY, roomPxW, roomPxH);
     ctx.fill();
     ctx.stroke();
 
-    if (r.coverageMode === 'bed-wall') {
-        const zone = r.targetZoneRect;
+    // ── Draw grid lines ──
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
 
-        ctx.fillStyle = failedConstraintIds.has('fcc') ? 'rgba(255, 107, 107, 0.08)' : 'rgba(91, 140, 255, 0.10)';
-        ctx.strokeStyle = failedConstraintIds.has('fcc') ? 'rgba(255, 107, 107, 0.55)' : 'rgba(91, 140, 255, 0.45)';
-        ctx.lineWidth = 1.5;
+    for (let ix = 1; ix < r.nx; ix++) {
+        const x = toCanvasX(ix * r.cellL);
         ctx.beginPath();
-        ctx.rect(toCanvasX(zone.x), toCanvasY(zone.y), zone.width * scale, zone.height * scale);
-        ctx.fill();
+        ctx.moveTo(x, offsetY);
+        ctx.lineTo(x, offsetY + roomPxH);
         ctx.stroke();
-
-        ctx.fillStyle = 'rgba(91, 140, 255, 0.9)';
-        ctx.font = '10px Inter, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('Zone ciblée', toCanvasX(zone.x) + 6, toCanvasY(zone.y) + 14);
-    } else {
-        ctx.strokeStyle = 'rgba(74, 232, 160, 0.15)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([6, 4]);
-
-        for (let ix = 1; ix < r.nx; ix++) {
-            const x = toCanvasX(ix * r.cellL);
-            ctx.beginPath();
-            ctx.moveTo(x, offsetY);
-            ctx.lineTo(x, offsetY + roomPxH);
-            ctx.stroke();
-        }
-        for (let iy = 1; iy < r.ny; iy++) {
-            const y = toCanvasY(iy * r.cellW);
-            ctx.beginPath();
-            ctx.moveTo(offsetX, y);
-            ctx.lineTo(offsetX + roomPxW, y);
-            ctx.stroke();
-        }
-        ctx.setLineDash([]);
     }
+    for (let iy = 1; iy < r.ny; iy++) {
+        const y = toCanvasY(iy * r.cellW);
+        ctx.beginPath();
+        ctx.moveTo(offsetX, y);
+        ctx.lineTo(offsetX + roomPxW, y);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
 
     // ── Draw fans ──
     r.fanPositions.forEach((pos, idx) => {
@@ -1160,9 +1040,9 @@ function drawPlanView(r) {
         // Influence zone (large circle)
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(74, 232, 160, 0.06)';
+        ctx.fillStyle = C.fanFill;
         ctx.fill();
-        ctx.strokeStyle = 'rgba(74, 232, 160, 0.25)';
+        ctx.strokeStyle = C.fanStroke;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([4, 3]);
         ctx.stroke();
@@ -1171,7 +1051,7 @@ function drawPlanView(r) {
         if (failedConstraintIds.has('fcc')) {
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 107, 107, 0.08)';
+            ctx.fillStyle = C.secFill;
             ctx.fill();
             ctx.strokeStyle = 'rgba(255, 107, 107, 0.65)';
             ctx.lineWidth = 2;
@@ -1181,38 +1061,39 @@ function drawPlanView(r) {
         }
 
         // Fan blades (stylized)
-        drawFanIcon(ctx, cx, cy, radius * 0.6);
+        drawFanIcon(ctx, cx, cy, radius * 0.6, C);
 
         // Center dot
         ctx.beginPath();
         ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-        ctx.fillStyle = failedConstraintIds.has('fcc') ? '#ff6b6b' : '#4ae8a0';
+        ctx.fillStyle = failedConstraintIds.has('fcc') ? C.red : C.fanDot;
         ctx.fill();
     });
 
     // ── Dimension annotations ──
-    ctx.fillStyle = '#9398a8';
+    ctx.fillStyle = C.dimColor;
     ctx.font = '11px Inter, sans-serif';
     ctx.textAlign = 'center';
 
     // Room length (top)
-    drawDimension(ctx, offsetX, offsetY - 18, offsetX + roomPxW, offsetY - 18, `${r.L.toFixed(2)} m`, '#9398a8');
+    drawDimension(ctx, offsetX, offsetY - 18, offsetX + roomPxW, offsetY - 18, `${r.L.toFixed(2)} m`, C.dimColor);
 
     // Room width (left)
-    drawDimensionVertical(ctx, offsetX - 18, offsetY, offsetX - 18, offsetY + roomPxH, `${r.W.toFixed(2)} m`, '#9398a8');
+    drawDimensionVertical(ctx, offsetX - 18, offsetY, offsetX - 18, offsetY + roomPxH, `${r.W.toFixed(2)} m`, C.dimColor);
 
     // Cell dimensions (if multiple cells)
-    if (r.coverageMode !== 'bed-wall' && (r.nx > 1 || r.ny > 1)) {
+    if (r.nx > 1 || r.ny > 1) {
         const cellPxW = r.cellL * scale;
         const cellPxH = r.cellW * scale;
+        const cellDimColor = C.fanStroke;
         
         // Cell length (bottom of first cell)
         if (r.nx > 1) {
-            drawDimension(ctx, offsetX, offsetY + roomPxH + 20, offsetX + cellPxW, offsetY + roomPxH + 20, `${r.cellL.toFixed(2)} m`, 'rgba(74, 232, 160, 0.6)');
+            drawDimension(ctx, offsetX, offsetY + roomPxH + 20, offsetX + cellPxW, offsetY + roomPxH + 20, `${r.cellL.toFixed(2)} m`, cellDimColor);
         }
         // Cell width (right of first cell)
         if (r.ny > 1) {
-            drawDimensionVertical(ctx, offsetX + roomPxW + 20, offsetY, offsetX + roomPxW + 20, offsetY + cellPxH, `${r.cellW.toFixed(2)} m`, 'rgba(74, 232, 160, 0.6)');
+            drawDimensionVertical(ctx, offsetX + roomPxW + 20, offsetY, offsetX + roomPxW + 20, offsetY + cellPxH, `${r.cellW.toFixed(2)} m`, cellDimColor);
         }
     }
 
@@ -1229,7 +1110,7 @@ function drawPlanView(r) {
         ];
         wallCandidates.sort((a, b) => a.dist - b.dist);
         const nearest = wallCandidates[0];
-        const wallColor = failedConstraintIds.has('wall') ? 'rgba(255, 107, 107, 0.9)' : 'rgba(255, 159, 67, 0.8)';
+        const wallColor = failedConstraintIds.has('wall') ? 'rgba(255, 107, 107, 0.9)' : C.wallColor;
 
         ctx.strokeStyle = wallColor;
         ctx.lineWidth = failedConstraintIds.has('wall') ? 2 : 1;
@@ -1275,7 +1156,7 @@ function drawPlanView(r) {
     drawDiagnosticBadges(ctx, issueLabels, offsetX + 8, offsetY + 8);
 }
 
-function drawFanIcon(ctx, cx, cy, size) {
+function drawFanIcon(ctx, cx, cy, size, C) {
     const blades = 4;
     const bladeLen = size;
     
@@ -1293,9 +1174,9 @@ function drawFanIcon(ctx, cx, cy, size) {
         ctx.quadraticCurveTo(bladeLen, 0, bladeLen * 0.8, bladeLen * 0.08);
         ctx.quadraticCurveTo(bladeLen * 0.3, bladeLen * 0.1, 0, 0);
         
-        ctx.fillStyle = 'rgba(74, 232, 160, 0.2)';
+        ctx.fillStyle = C.fanBladeFill;
         ctx.fill();
-        ctx.strokeStyle = 'rgba(74, 232, 160, 0.4)';
+        ctx.strokeStyle = C.fanBladeStroke;
         ctx.lineWidth = 1;
         ctx.stroke();
         
@@ -1393,6 +1274,7 @@ function drawSectionView(r) {
     const canvas = document.getElementById('canvas-section');
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
+    const C = getCanvasColors();
 
     const displayW = canvas.parentElement.clientWidth - 24;
     const displayH = Math.min(400, displayW * 0.55);
@@ -1403,7 +1285,7 @@ function drawSectionView(r) {
     ctx.scale(dpr, dpr);
 
     // Clear
-    ctx.fillStyle = '#12141e';
+    ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, displayW, displayH);
 
     const margin = { top: 30, right: 80, bottom: 30, left: 80 };
@@ -1424,20 +1306,20 @@ function drawSectionView(r) {
     const issueLabels = getConstraintFailureLabels(r);
 
     // Room outline
-    ctx.strokeStyle = '#3a3f5a';
+    ctx.strokeStyle = C.roomStroke;
     ctx.lineWidth = 2;
-    ctx.fillStyle = '#181c2a';
+    ctx.fillStyle = C.roomFill;
     ctx.beginPath();
     ctx.rect(offsetX, offsetY, roomPxW, roomPxH);
     ctx.fill();
     ctx.stroke();
 
     // Floor
-    ctx.fillStyle = '#2a2e42';
+    ctx.fillStyle = C.floor;
     ctx.fillRect(offsetX, offsetY + roomPxH - 4, roomPxW, 4);
 
     // Ceiling
-    ctx.fillStyle = '#2a2e42';
+    ctx.fillStyle = C.floor;
     ctx.fillRect(offsetX, offsetY, roomPxW, 4);
 
     // ── Fan position in section ──
@@ -1446,9 +1328,9 @@ function drawSectionView(r) {
     const hPalesPx = r.hPales * scale;
     const fanY = offsetY + hMontPx;
     const fanRadius = (r.D / 2) * scale;
-    const mountingColor = failedConstraintIds.has('mounting') ? 'rgba(255, 107, 107, 0.9)' : '#5c6178';
-    const bladeColor = failedConstraintIds.has('blade-height') ? 'rgba(255, 107, 107, 0.85)' : 'rgba(74, 232, 160, 0.6)';
-    const diameterColor = failedConstraintIds.has('fcc') ? 'rgba(255, 107, 107, 0.9)' : 'rgba(74, 232, 160, 0.6)';
+    const mountingColor = failedConstraintIds.has('mounting') ? 'rgba(255, 107, 107, 0.9)' : C.rod;
+    const bladeColor = failedConstraintIds.has('blade-height') ? 'rgba(255, 107, 107, 0.85)' : C.bladeOk;
+    const diameterColor = failedConstraintIds.has('fcc') ? 'rgba(255, 107, 107, 0.9)' : C.bladeOk;
 
     // Mounting rod
     ctx.strokeStyle = mountingColor;
@@ -1459,7 +1341,7 @@ function drawSectionView(r) {
     ctx.stroke();
 
     // Fan body
-    ctx.fillStyle = '#3a3f5a';
+    ctx.fillStyle = C.body;
     ctx.beginPath();
     ctx.arc(fanCenterX, fanY, 8, 0, Math.PI * 2);
     ctx.fill();
@@ -1484,7 +1366,7 @@ function drawSectionView(r) {
     ctx.fill();
 
     // ── Air flow arrows ──
-    ctx.strokeStyle = 'rgba(91, 140, 255, 0.2)';
+    ctx.strokeStyle = C.flow;
     ctx.lineWidth = 1;
     const arrowCount = 5;
     for (let i = 0; i < arrowCount; i++) {
@@ -1498,15 +1380,15 @@ function drawSectionView(r) {
     // ── Dimension annotations ──
 
     // HSP (left side)
-    drawDimensionVertical(ctx, offsetX - 25, offsetY, offsetX - 25, offsetY + roomPxH, `HSP ${r.HSP.toFixed(2)} m`, '#9398a8');
+    drawDimensionVertical(ctx, offsetX - 25, offsetY, offsetX - 25, offsetY + roomPxH, `HSP ${r.HSP.toFixed(2)} m`, C.dimColor);
 
     // H_montage (right side, ceiling to fan)
     if (hMontPx > 15) {
-        drawDimensionVertical(ctx, offsetX + roomPxW + 25, offsetY, offsetX + roomPxW + 25, fanY, `${(r.hMontage * 100).toFixed(0)} cm`, failedConstraintIds.has('mounting') ? '#ff6b6b' : '#ff9f43');
+        drawDimensionVertical(ctx, offsetX + roomPxW + 25, offsetY, offsetX + roomPxW + 25, fanY, `${(r.hMontage * 100).toFixed(0)} cm`, failedConstraintIds.has('mounting') ? C.red : C.orange);
     }
 
     // H_pales (right side, fan to floor)
-    drawDimensionVertical(ctx, offsetX + roomPxW + 55, fanY, offsetX + roomPxW + 55, offsetY + roomPxH, `${(r.hPales * 100).toFixed(0)} cm`, failedConstraintIds.has('blade-height') ? '#ff6b6b' : '#4ae8a0');
+    drawDimensionVertical(ctx, offsetX + roomPxW + 55, fanY, offsetX + roomPxW + 55, offsetY + roomPxH, `${(r.hPales * 100).toFixed(0)} cm`, failedConstraintIds.has('blade-height') ? C.red : C.accent);
 
     // Diameter (under fan)
     const dLabelY = fanY + 20;
@@ -1517,16 +1399,16 @@ function drawSectionView(r) {
     ctx.textAlign = 'center';
 
     // Mounting type label
-    let mountColor = '#4ae8a0';
-    if (r.mountingType === 'Low-profile') mountColor = '#ff9f43';
-    if (r.mountingType !== 'Standard' && r.mountingType !== 'Low-profile') mountColor = '#ff6b6b';
+    let mountColor = C.accent;
+    if (r.mountingType === 'Low-profile') mountColor = C.orange;
+    if (r.mountingType !== 'Standard' && r.mountingType !== 'Low-profile') mountColor = C.red;
     ctx.fillStyle = mountColor;
     ctx.font = 'bold 11px Inter, sans-serif';
     ctx.fillText(`Montage ${r.mountingType}`, fanCenterX, fanY - 15);
 
     // Security line
     const secY = offsetY + roomPxH - r.securityHeight * scale;
-    ctx.strokeStyle = 'rgba(255, 107, 107, 0.3)';
+    ctx.strokeStyle = C.secLine;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -1536,17 +1418,17 @@ function drawSectionView(r) {
     ctx.setLineDash([]);
 
     if (failedConstraintIds.has('blade-height')) {
-        ctx.fillStyle = 'rgba(255, 107, 107, 0.08)';
+        ctx.fillStyle = C.secFill;
         ctx.fillRect(offsetX, secY, roomPxW, offsetY + roomPxH - secY);
     }
 
-    ctx.fillStyle = 'rgba(255, 107, 107, 0.5)';
+    ctx.fillStyle = C.secText;
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(`Sécurité: ${(r.securityHeight * 100).toFixed(0)} cm`, offsetX + 5, secY - 4);
 
     // Floor / Ceiling labels
-    ctx.fillStyle = '#5c6178';
+    ctx.fillStyle = C.labelMuted;
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Plafond', offsetX + roomPxW / 2, offsetY - 8);
@@ -1580,6 +1462,7 @@ function drawDiagnosticBadges(ctx, labels, startX, startY) {
         return;
     }
 
+    const C = getCanvasColors();
     ctx.save();
     ctx.font = '10px Inter, sans-serif';
     ctx.textAlign = 'left';
@@ -1592,15 +1475,15 @@ function drawDiagnosticBadges(ctx, labels, startX, startY) {
         const width = textWidth + 20;
         const height = 18;
 
-        ctx.fillStyle = 'rgba(255, 107, 107, 0.15)';
-        ctx.strokeStyle = 'rgba(255, 107, 107, 0.55)';
+        ctx.fillStyle = C.diagBg;
+        ctx.strokeStyle = C.diagBorder;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.roundRect(x, y, width, height, 6);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(255, 214, 214, 0.95)';
+        ctx.fillStyle = C.diagText;
         ctx.fillText(label, x + 10, y + 4);
     });
 

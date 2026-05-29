@@ -4,22 +4,22 @@ Application web statique de dimensionnement et de placement de brasseurs d'air p
 
 [Accéder à l'application](https://guilamu.github.io/brasseur-dair/)
 
-L'objectif du projet est de proposer un outil simple, pédagogique et directement exploitable pour estimer un calepinage cohérent, visualiser les contraintes principales et comparer un choix théorique avec les diamètres disponibles sur le marché.
+L'objectif du projet est de proposer un outil simple, pédagogique et directement exploitable pour estimer un calepinage cohérent, visualiser les contraintes principales et affiner son choix de diamètre à l'aide d'un curseur interactif.
 
 Important : ce projet est une implémentation indépendante. Il ne constitue pas un outil officiel ADEME, SURYA Consultants, Envirobat BDM, ISEA Projects ou LASA, et n'engage pas ses auteurs scientifiques.
 
 ## Fonctionnalités
 
 - Calcul automatique du nombre de brasseurs, de leur diamètre et de leur implantation.
-- Mode `Couverture uniforme de la pièce` pour viser une diffusion régulière sur l'ensemble du local.
-- Mode `Zone de couchage contre un mur` pour un confort local ciblé sur une zone type de `2,5 x 2,5 m`.
+- Sélecteur du nombre de brasseurs : le nombre optimal est proposé par défaut, l'utilisateur peut le réduire et obtient un conseil de diamètre adapté.
 - Choix d'un usage parmi plusieurs profils : chambre, séjour, bureau, scolaire, sport.
 - Saisie optionnelle d'un diamètre manuel avec bascule en mode diagnostic si une ou plusieurs contraintes ne sont pas respectées.
+- Curseur interactif de diamètre recommandé, affichant la plage acceptable et mettant à jour le résultat en temps réel.
 - Vérification détaillée des contraintes géométriques et de montage.
 - Explication textuelle du choix retenu par l'application.
 - Vue en plan et vue en coupe avec mise en évidence des contraintes non respectées en mode diagnostic.
-- Affichage des diamètres du marché compatibles avec l'enveloppe calculée.
 - Estimation de la vitesse d'air et de l'effet rafraîchissant.
+- Thème sombre et thème clair avec bascule instantanée et persistance du choix.
 
 ## Ce que calcule l'application
 
@@ -29,14 +29,13 @@ Entrées utilisateur :
 - Largeur de la pièce.
 - Hauteur sous plafond.
 - Type d'activité / usage.
-- Mode de couverture.
+- Nombre de brasseurs (ajustable par rapport à l'optimal).
 - Diamètre manuel optionnel.
 
 Sorties principales :
 
 - Nombre de brasseurs.
-- Diamètre calculé.
-- Diamètre de marché compatible quand il existe.
+- Diamètre idéal et plage acceptable.
 - Type de montage.
 - Effet rafraîchissant estimé.
 - Vérification des contraintes.
@@ -47,22 +46,19 @@ Sorties principales :
 
 - Le projet est une traduction applicative des règles de calepinage et des données publiques BRASSE / BRASSE II.
 - L'effet rafraîchissant est une estimation simplifiée à partir d'une vitesse d'air cible et d'un ajustement logarithmique utilisé dans l'application.
-- Le mode `Zone de couchage contre un mur` repose sur une hypothèse simplifiée de zone type `2,5 x 2,5 m`.
-- Les diamètres de marché actuellement intégrés sont : `70`, `80`, `90`, `107`, `122`, `132`, `142`, `152`, `166` cm.
 - En mode diamètre manuel, le rendu de diagnostic aide à comprendre pourquoi une implantation ne respecte pas les contraintes, mais ne remplace pas une validation de conception par un professionnel.
 
 ## Lancer l'application en local
 
 ### Option 1 - ouverture directe
 
-Ouvrir le fichier `app/index.html` dans un navigateur moderne.
+Ouvrir le fichier `index.html` dans un navigateur moderne.
 
 ### Option 2 - petit serveur local
 
 Depuis la racine du projet :
 
 ```powershell
-Set-Location app
 python -m http.server 8000
 ```
 
@@ -73,11 +69,10 @@ Navigateurs conseillés : versions récentes de Chrome, Edge ou Firefox.
 ## Structure du projet
 
 ```text
-app/
-  app.js        logique de calcul et interactions UI
-  index.html    structure de l'application
-  styles.css    styles et animations
-  fan.svg       icône du ventilateur du header
+app.js        logique de calcul et interactions UI
+index.html    structure de l'application
+styles.css    styles et animations
+fan.svg       icône du ventilateur du header
 ```
 
 ## Références et crédits
@@ -93,7 +88,7 @@ Cette application s'appuie principalement sur les publications ADEME suivantes :
 Sources de travail complémentaires utilisées pour cette application :
 
 - le document local `application/specs_app_brasseur.md`, qui consolide les règles et hypothèses retenues dans cette implémentation ;
-- le support de formation SURYA Ingénierie autour du confort thermique et des brasseurs d'air, notamment `Qu’est-ce que le confort ? Comment le brasseur améliore le confort ressenti` ;
+- le support de formation SURYA Ingénierie autour du confort thermique et des brasseurs d'air, notamment `Qu'est-ce que le confort ? Comment le brasseur améliore le confort ressenti` ;
 - les documents PDF de travail présents dans ce workspace.
 
 ## Positionnement du projet
@@ -118,6 +113,19 @@ Consulter le fichier [LICENSE](LICENSE) pour le texte complet de la licence.
 Cette licence est cohérente avec un projet open source destiné à être diffusé largement, y compris lorsqu'il est utilisé au travers d'un service en ligne.
 
 ## Historique
+
+### [0.9.1] - 2026-05-29
+
+- Remplacement du mode « Zone de couchage contre un mur » par un sélecteur du nombre de brasseurs, de 1 jusqu'au nombre optimal calculé.
+- Le nombre optimal est sélectionné par défaut ; choisir un nombre réduit adapte automatiquement le diamètre conseillé et signale les éventuelles cellules allongées.
+- Remplacement de la grille de « diamètres disponibles sur le marché » par un affichage du diamètre idéal avec plage acceptable et curseur interactif.
+- Le curseur met à jour le diamètre du brasseur et le résultat en temps réel.
+- Correction d'un arrondi qui affichait un diamètre minimum acceptable incorrect (Math.round → Math.ceil pour le min, Math.floor pour le max).
+- Vues en plan et en coupe passées en pleine largeur pour améliorer la lisibilité.
+- Ajout d'un thème clair complet avec bascule sombre / clair dans le header (persisté en localStorage).
+- Les canvas (plan et coupe) s'adaptent au thème via des variables CSS dédiées.
+- Suppression de tout le code lié au mode bed-wall (calculateBedWallMode, calculateBedWallDiagnosticMode, etc.).
+- Nettoyage du README : suppression des références obsolètes (mode couverture, diamètres marché), mise à jour de la structure du projet.
 
 ### [0.9] - 2026-05-28
 
