@@ -1138,6 +1138,7 @@ function drawPlanView(r) {
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     const C = getCanvasColors();
+    const isImperial = window.I18n.unit === 'imperial';
 
     // Canvas sizing
     const displayW = canvas.parentElement.clientWidth - 24;
