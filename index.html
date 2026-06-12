@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -19,17 +20,25 @@
                     <img src="fan.svg" alt="Brasseur d'air" width="48" height="48">
                 </div>
                 <div>
-                    <h1>Brasseur d'Air</h1>
-                    <a href="#app-footer" class="subtitle subtitle-link">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
+                    <h1 data-i18n="app_title">Brasseur d'Air</h1>
+                    <a href="#app-footer" class="subtitle subtitle-link" data-i18n="header_subtitle">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
                 </div>
             </div>
             <div class="header-controls">
-                <a href="givoni.html" class="header-btn" title="Comprendre l'utilité du brasseur d'air (Diagramme de Givoni)">
+                <a href="givoni.html" class="header-btn" data-i18n-title="header_btn_why" data-i18n="header_btn_why">
                     <span>📊</span> Pourquoi le brasseur d'air ?
                 </a>
-                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Basculer le thème clair / sombre" title="Changer de thème">
+                <button id="theme-toggle" class="theme-toggle" type="button" data-i18n-aria="theme_toggle_label" data-i18n-title="theme_toggle_title">
                     <span class="theme-icon">🌙</span>
                 </button>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="fr">FR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <div class="unit-switcher" style="margin-left: 8px;" data-i18n-title="unit_toggle_title">
+                    <button class="unit-btn active" data-unit-sys="metric" data-i18n="unit_metric">Métrique</button>
+                    <button class="unit-btn" data-unit-sys="imperial" data-i18n="unit_imperial">Impérial</button>
+                </div>
             </div>
         </div>
     </header>
@@ -38,7 +47,7 @@
         <!-- Input Panel -->
         <section id="input-panel" class="panel">
             <div class="panel-header">
-                <h2>
+                <h2 data-i18n="panel_settings">
                     <span class="panel-icon">📐</span>
                     Paramètres
                 </h2>
@@ -46,29 +55,29 @@
             <form id="calc-form" autocomplete="off">
                 <!-- Room dimensions -->
                 <fieldset class="input-group">
-                    <legend>Dimensions de la pièce</legend>
+                    <legend data-i18n="room_dimensions">Dimensions de la pièce</legend>
                     <div class="input-row">
                         <div class="input-field">
-                            <label for="room-length">Longueur</label>
+                            <label for="room-length" data-i18n="label_length">Longueur</label>
                             <div class="input-with-unit">
                                 <input type="number" id="room-length" min="1" max="50" step="0.01" value="5" required>
-                                <span class="unit">m</span>
+                                <span class="unit" data-unit="length">m</span>
                             </div>
                         </div>
                         <div class="input-field">
-                            <label for="room-width">Largeur</label>
+                            <label for="room-width" data-i18n="label_width">Largeur</label>
                             <div class="input-with-unit">
                                 <input type="number" id="room-width" min="1" max="50" step="0.01" value="4" required>
-                                <span class="unit">m</span>
+                                <span class="unit" data-unit="length">m</span>
                             </div>
                         </div>
                     </div>
                     <div class="input-row">
                         <div class="input-field full-width">
-                            <label for="room-height">Hauteur sous plafond</label>
+                            <label for="room-height" data-i18n="label_height">Hauteur sous plafond</label>
                             <div class="input-with-unit">
                                 <input type="number" id="room-height" min="2" max="20" step="0.01" value="2.50" required>
-                                <span class="unit">m</span>
+                                <span class="unit" data-unit="hsp">m</span>
                             </div>
                         </div>
                     </div>
@@ -76,44 +85,44 @@
 
                 <!-- Usage -->
                 <fieldset class="input-group">
-                    <legend>Usage de la pièce</legend>
+                    <legend data-i18n="room_usage">Usage de la pièce</legend>
                     <div class="input-field">
-                        <label for="room-usage">Type d'activité</label>
+                        <label for="room-usage" data-i18n="label_activity">Type d'activité</label>
                         <div class="select-wrapper">
                             <select id="room-usage">
-                                <option value="chambre">🛏️ Chambre / Repos</option>
-                                <option value="sejour" selected>🛋️ Séjour / Activités douces</option>
-                                <option value="bureau">💼 Bureau / Tertiaire</option>
-                                <option value="scolaire">🏫 Scolaire / Enseignement</option>
-                                <option value="sport">🏃 Sport / Activités soutenues</option>
+                                <option value="chambre" data-i18n="usage_chambre">🛏️ Chambre / Repos</option>
+                                <option value="sejour" selected data-i18n="usage_sejour">🛋️ Séjour / Activités douces</option>
+                                <option value="bureau" data-i18n="usage_bureau">💼 Bureau / Tertiaire</option>
+                                <option value="scolaire" data-i18n="usage_scolaire">🏫 Scolaire / Enseignement</option>
+                                <option value="sport" data-i18n="usage_sport">🏃 Sport / Activités soutenues</option>
                             </select>
                         </div>
                     </div>
                 </fieldset>
 
                 <fieldset class="input-group">
-                    <legend>Nombre de brasseurs</legend>
+                    <legend data-i18n="fan_count_group">Nombre de brasseurs</legend>
                     <div class="input-field">
-                        <label for="fan-count">Brasseurs à installer</label>
+                        <label for="fan-count" data-i18n="fan_count_label">Brasseurs à installer</label>
                         <div class="select-wrapper">
                             <select id="fan-count">
                                 <option value="auto" selected>—</option>
                             </select>
                         </div>
-                        <p id="fan-count-hint" class="input-hint">Le nombre optimal est calculé automatiquement selon les dimensions de la pièce.</p>
+                        <p id="fan-count-hint" class="input-hint" data-i18n="fan_count_hint_auto">Le nombre optimal est calculé automatiquement selon les dimensions de la pièce.</p>
                     </div>
                 </fieldset>
 
                 <!-- Fan diameter -->
                 <fieldset class="input-group">
-                    <legend>Brasseur d'air <span class="optional-tag">optionnel</span></legend>
+                    <legend data-i18n="fan_diameter_group">Brasseur d'air <span class="optional-tag">optionnel</span></legend>
                     <div class="input-field">
-                        <label for="fan-diameter">Diamètre du brasseur</label>
+                        <label for="fan-diameter" data-i18n="fan_diameter_label">Diamètre du brasseur</label>
                         <div class="input-with-unit">
-                            <input type="number" id="fan-diameter" min="40" max="300" step="1" placeholder="Auto">
-                            <span class="unit">cm</span>
+                            <input type="number" id="fan-diameter" min="40" max="300" step="1" data-i18n-placeholder="fan_diameter_hint" placeholder="Auto">
+                            <span class="unit" data-unit="diameter">cm</span>
                         </div>
-                        <p class="input-hint">Laissez vide pour un calcul automatique</p>
+                        <p class="input-hint" data-i18n="fan_diameter_hint">Laissez vide pour un calcul automatique</p>
                     </div>
                 </fieldset>
 
@@ -124,15 +133,15 @@
                 <h3 id="usage-info-title">Séjour / Activités douces</h3>
                 <div class="info-grid">
                     <div class="info-item">
-                        <span class="info-label">Vitesse d'air cible</span>
+                        <span class="info-label" data-i18n="v_target_label">Vitesse d'air cible</span>
                         <span class="info-value" id="usage-v-target">0,6 – 0,8 m/s</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Bruit max acceptable</span>
+                        <span class="info-label" data-i18n="dba_target_label">Bruit max acceptable</span>
                         <span class="info-value" id="usage-dba-target">24 – 34 dBA</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Métabolisme</span>
+                        <span class="info-label" data-i18n="met_label">Métabolisme</span>
                         <span class="info-value" id="usage-met">1,1 met</span>
                     </div>
                 </div>
@@ -142,7 +151,7 @@
         <!-- Results Panel -->
         <section id="results-panel" class="panel">
             <div class="panel-header">
-                <h2>
+                <h2 data-i18n="panel_results">
                     <span class="panel-icon">📊</span>
                     Résultats
                 </h2>
@@ -151,7 +160,7 @@
             <!-- Placeholder when no results -->
             <div id="results-placeholder" class="placeholder-message">
                 <div class="placeholder-icon">🌀</div>
-                <p>Renseignez les dimensions de votre pièce pour voir le placement optimal se mettre à jour automatiquement.</p>
+                <p data-i18n="results_placeholder">Renseignez les dimensions de votre pièce pour voir le placement optimal se mettre à jour automatiquement.</p>
             </div>
 
             <!-- Results content (hidden initially) -->
@@ -160,45 +169,45 @@
                 <div id="summary-cards" class="summary-grid">
                     <div class="summary-card card-fans">
                         <div class="card-value" id="result-num-fans">—</div>
-                        <div class="card-label">Brasseur(s)</div>
+                        <div class="card-label" data-i18n="card_fans">Brasseur(s)</div>
                     </div>
                     <div class="summary-card card-diameter">
                         <div class="card-value" id="result-diameter">—</div>
-                        <div class="card-label">Diamètre (cm)</div>
+                        <div class="card-label" data-i18n="card_diameter">Diamètre (cm)</div>
                     </div>
                     <div class="summary-card card-mounting">
                         <div class="card-value" id="result-mounting">—</div>
-                        <div class="card-label">Montage</div>
+                        <div class="card-label" data-i18n="card_mounting">Montage</div>
                     </div>
                     <div class="summary-card card-ce">
                         <div class="card-value" id="result-ce">—</div>
-                        <div class="card-label">Effet rafraîchissant (°C)</div>
+                        <div class="card-label" data-i18n="card_ce">Effet rafraîchissant (°C)</div>
                     </div>
                 </div>
 
                 <!-- Constraints checklist -->
                 <details id="constraints-section" class="results-section constraints-accordion">
                     <summary>
-                        <h3>Vérification des contraintes</h3>
+                        <h3 data-i18n="constraints_title">Vérification des contraintes</h3>
                     </summary>
                     <ul id="constraints-list" class="constraints-list"></ul>
                 </details>
 
                 <div id="explanation-section" class="results-section">
-                    <h3>Explication du choix</h3>
+                    <h3 data-i18n="explanation_title">Explication du choix</h3>
                     <div id="results-explanation" class="results-explanation"></div>
                 </div>
 
                 <!-- Visualizations -->
                 <div class="viz-container">
                     <div class="viz-block">
-                        <h3>Vue en plan</h3>
+                        <h3 data-i18n="view_plan">Vue en plan</h3>
                         <div class="canvas-wrapper">
                             <canvas id="canvas-plan" width="600" height="500"></canvas>
                         </div>
                     </div>
                     <div class="viz-block">
-                        <h3>Vue en coupe</h3>
+                        <h3 data-i18n="view_section">Vue en coupe</h3>
                         <div class="canvas-wrapper">
                             <canvas id="canvas-section" width="600" height="400"></canvas>
                         </div>
@@ -207,15 +216,15 @@
 
                 <!-- Detailed metrics -->
                 <div id="metrics-section" class="results-section">
-                    <h3>Métriques détaillées</h3>
+                    <h3 data-i18n="metrics_title">Métriques détaillées</h3>
                     <div class="metrics-grid" id="metrics-grid"></div>
                 </div>
 
                 <!-- Diameter recommendation -->
                 <div id="market-section" class="results-section">
-                    <h3>Diamètre recommandé</h3>
+                    <h3 data-i18n="diameter_rec_title">Diamètre recommandé</h3>
                     <div id="diameter-recommendation"></div>
-                    <p class="market-note">Afin d'optimiser l'acoustique et la pérennité de votre brasseur, privilégiez un modèle avec fixation sur rotule/pivot.</p>
+                    <p class="market-note" data-i18n="market_note">Afin d'optimiser l'acoustique et la pérennité de votre brasseur, privilégiez un modèle avec fixation sur rotule/pivot.</p>
                 </div>
             </div>
         </section>
@@ -223,28 +232,28 @@
 
     <!-- Footer -->
     <footer id="app-footer">
-        <p class="footer-intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
+        <p class="footer-intro" data-i18n="footer_intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
         <ul class="footer-sources">
             <li>
-                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
-                <span>Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
+                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse1">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
+                <span data-i18n="footer_sources_brasse1_credits">Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
             </li>
             <li>
-                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
-                <span>Crédits : Surya Consultants, LASA.</span>
+                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse2">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
+                <span data-i18n="footer_sources_brasse2_credits">Crédits : Surya Consultants, LASA.</span>
             </li>
         </ul>
-        <p>Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
+        <p data-i18n="footer_rules_interpretation">Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
         <div class="footer-project-links">
-            <span class="footer-version">Version 0.9.2</span>
+            <span class="footer-version" data-i18n="footer_version">Version 0.9.3</span>
             <a class="footer-github-link" href="https://github.com/guilamu/brasseur-dair" target="_blank" rel="noopener noreferrer" aria-label="Accéder au code source sur GitHub">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.15-3.2.7-3.88-1.36-3.88-1.36-.53-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.03 1.76 2.69 1.25 3.35.95.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.72 0-1.27.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.19 1.19a11.1 11.1 0 0 1 5.81 0c2.22-1.5 3.19-1.19 3.19-1.19.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.11 0 4.45-2.71 5.42-5.29 5.71.42.36.79 1.06.79 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
                 </svg>
-                <span>Code source</span>
+                <span data-i18n="footer_code_source">Code source</span>
             </a>
         </div>
-        <p class="disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
+        <p class="disclaimer" data-i18n="footer_disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
     </footer>
 
     <script src="app.js"></script>

@@ -114,6 +114,12 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 
 ## Historique
 
+### [0.9.3] - 2026-06-12
+
+- Ajout de la localisation et du support bilingue complet (Français / Anglais) avec bascule en temps réel dans le header.
+- Ajout d'une bascule de système d'unités (Métrique / Impérial) adaptant dynamiquement les formulaires de saisie, les plages acceptables, les calculs, les rendus graphiques (Givoni) et les visualisations (vue en plan et coupe).
+- Persistance automatique de la langue et du système d'unités sélectionnés dans le `localStorage`.
+
 ### [0.9.2] - 2026-05-29
 
 - Ajout de la page pédagogique interactive `givoni.html` présentant le Diagramme bioclimatique de Givoni interactif.

@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="i18n.js"></script>
     
     <style>
         /* Modern Premium Design System */
@@ -783,17 +784,25 @@
                     <img src="fan.svg" alt="Brasseur d'air" width="48" height="48">
                 </div>
                 <div>
-                    <h1>Brasseur d'Air</h1>
-                    <a href="#app-footer" class="subtitle subtitle-link">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
+                    <h1 data-i18n="app_title">Brasseur d'Air</h1>
+                    <a href="#app-footer" class="subtitle subtitle-link" data-i18n="header_subtitle">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
                 </div>
             </div>
             <div class="header-controls">
-                <a href="index.html" class="header-btn" title="Retourner à l'outil de calepinage">
+                <a href="index.html" class="header-btn" data-i18n-title="header_btn_sizing" data-i18n="header_btn_sizing">
                     <span>📐</span> Outil Calepinage
                 </a>
-                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Basculer le thème clair / sombre" title="Changer de thème">
+                <button id="theme-toggle" class="theme-toggle" type="button" data-i18n-aria="theme_toggle_label" data-i18n-title="theme_toggle_title">
                     <span class="theme-icon">🌙</span>
                 </button>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="fr">FR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <div class="unit-switcher" style="margin-left: 8px;" data-i18n-title="unit_toggle_title">
+                    <button class="unit-btn active" data-unit-sys="metric" data-i18n="unit_metric">Métrique</button>
+                    <button class="unit-btn" data-unit-sys="imperial" data-i18n="unit_imperial">Impérial</button>
+                </div>
             </div>
         </div>
     </header>
@@ -802,8 +811,8 @@
         
         <!-- Hero Introduction -->
         <section class="intro-hero">
-            <h2>Pourquoi brasser de l'air chaud apporte-t-il du confort ?</h2>
-            <p>
+            <h2 data-i18n="givoni_hero_title">Pourquoi brasser de l'air chaud apporte-t-il du confort ?</h2>
+            <p data-i18n="givoni_hero_desc">
                 Contrairement à la climatisation qui refroidit la température globale d'une pièce à grand renfort d'énergie, le brasseur d'air plafonnier agit directement sur le corps humain. 
                 Le <strong>Diagramme de Givoni</strong> démontre scientifiquement ce principe : en augmentant la vitesse de l'air, nous repoussons de plusieurs degrés la zone de confort thermique naturelle, pour une consommation électrique infime.
             </p>
@@ -815,8 +824,8 @@
             <!-- Left panel: Interactive Simulator -->
             <section class="panel">
                 <div class="panel-header">
-                    <h3><span>📊</span> Simulateur Bioclimatique de Givoni</h3>
-                    <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;">
+                    <h3 data-i18n="givoni_sim_title"><span>📊</span> Simulateur Bioclimatique de Givoni</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;" data-i18n="givoni_sim_helper">
                         Cliquez/glissez sur le graphique ou utilisez les curseurs
                     </span>
                 </div>
@@ -860,14 +869,14 @@
 
                         <!-- Static X-Axis Labels (Temperature) -->
                         <g id="x-axis-labels"></g>
-                        <text x="410" y="585" text-anchor="middle" class="svg-chart-label-axis">Température Sèche de l'Air (°C)</text>
+                        <text x="410" y="585" text-anchor="middle" class="svg-chart-label-axis" data-i18n="givoni_x_axis">Température Sèche de l'Air (°C)</text>
 
                         <!-- Static Y-Axis Labels (Specific Humidity) -->
                         <g id="y-axis-labels"></g>
                         <!-- Left Y-Axis title -->
-                        <text x="25" y="290" transform="rotate(-90, 25, 290)" text-anchor="middle" class="svg-chart-label-axis">Humidité Spécifique (g d'eau / kg d'air sec)</text>
+                        <text x="25" y="290" transform="rotate(-90, 25, 290)" text-anchor="middle" class="svg-chart-label-axis" data-i18n="givoni_y_axis_specific">Humidité Spécifique (g d'eau / kg d'air sec)</text>
                         <!-- Right Y-Axis title -->
-                        <text x="790" y="290" transform="rotate(90, 790, 290)" text-anchor="middle" class="svg-chart-label-axis">Humidité Absolue (g/kg)</text>
+                        <text x="790" y="290" transform="rotate(90, 790, 290)" text-anchor="middle" class="svg-chart-label-axis" data-i18n="givoni_y_axis_absolute">Humidité Absolue (g/kg)</text>
 
                         <!-- Active Climate Point Indicator -->
                         <g clip-path="url(#plot-area-clip)">
@@ -889,7 +898,7 @@
                     <!-- Temperature slider -->
                     <div class="slider-group">
                         <div class="slider-label-row">
-                            <span class="slider-title">🌡️ Température Ambiante</span>
+                            <span class="slider-title" data-i18n="slider_temp_title">🌡️ Température Ambiante</span>
                             <span class="slider-value" id="temp-val">28,0 °C</span>
                         </div>
                         <input type="range" id="temp-slider" class="slider-input" min="10" max="40" step="0.1" value="28">
@@ -898,7 +907,7 @@
                     <!-- Humidity slider -->
                     <div class="slider-group">
                         <div class="slider-label-row">
-                            <span class="slider-title">💧 Humidité Relative</span>
+                            <span class="slider-title" data-i18n="slider_hum_title">💧 Humidité Relative</span>
                             <span class="slider-value" id="hum-val">60 %</span>
                         </div>
                         <input type="range" id="hum-slider" class="slider-input" min="10" max="100" step="1" value="60">
@@ -907,10 +916,10 @@
 
                 <!-- Dynamic Diagnostic Card -->
                 <div class="diagnostic-card" id="diag-card">
-                    <span class="diagnostic-status" id="diag-status">Analyse en cours...</span>
-                    <h4 class="diagnostic-title" id="diag-title">Confort Thermique de Base</h4>
-                    <p class="diagnostic-description" id="diag-desc">Déterminez le confort en modifiant la température et l'humidité.</p>
-                    <div class="diagnostic-action-box" id="diag-action">Recommandation passive.</div>
+                    <span class="diagnostic-status" id="diag-status" data-i18n="diag_status_loading">Analyse en cours...</span>
+                    <h4 class="diagnostic-title" id="diag-title" data-i18n="diag_title_base">Confort Thermique de Base</h4>
+                    <p class="diagnostic-description" id="diag-desc" data-i18n="diag_desc_base">Déterminez le confort en modifiant la température et l'humidité.</p>
+                    <div class="diagnostic-action-box" id="diag-action" data-i18n="diag_action_base">Recommandation passive.</div>
                     
                     <!-- Fan speed visualization -->
                     <div class="fan-sim-container" id="fan-sim">
@@ -920,8 +929,8 @@
                             </svg>
                         </div>
                         <div class="fan-sim-text">
-                            <span class="fan-sim-label" id="fan-sim-state">Brasseur d'air arrêté</span>
-                            <span class="fan-sim-value" id="fan-sim-effect">Aucun effet de rafraîchissement nécessaire</span>
+                            <span class="fan-sim-label" id="fan-sim-state" data-i18n="fan_sim_state_stopped">Brasseur d'air arrêté</span>
+                            <span class="fan-sim-value" id="fan-sim-effect" data-i18n="fan_sim_effect_none">Aucun effet de rafraîchissement nécessaire</span>
                         </div>
                     </div>
                 </div>
@@ -930,15 +939,15 @@
             <!-- Right panel: Interactive Explanations and documentation -->
             <section class="panel info-panel">
                 <div class="panel-header">
-                    <h3><span>📖</span> L'utilité du Brasseur d'Air expliquée</h3>
+                    <h3 data-i18n="explain_title"><span>📖</span> L'utilité du Brasseur d'Air expliquée</h3>
                 </div>
 
                 <!-- Documentation Tabs Navigation -->
                 <nav class="nav-tabs">
-                    <button class="tab-btn active" onclick="switchTab(this, 'tab-physio')">Physiologie</button>
-                    <button class="tab-btn" onclick="switchTab(this, 'tab-energy')">Énergie &amp; Coûts</button>
-                    <button class="tab-btn" onclick="switchTab(this, 'tab-couplage')">Couplage Clim</button>
-                    <button class="tab-btn" onclick="switchTab(this, 'tab-saisons')">Saisons</button>
+                    <button class="tab-btn active" onclick="switchTab(this, 'tab-physio')" data-i18n="tab_physio">Physiologie</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-energy')" data-i18n="tab_energy">Énergie &amp; Coûts</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-couplage')" data-i18n="tab_couplage">Couplage Clim</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'tab-saisons')" data-i18n="tab_saisons">Saisons</button>
                 </nav>
 
                 <!-- Tab 1: Physiologie -->
@@ -947,9 +956,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">🧠</span>
-                                <h4>Le ventilateur ne refroidit pas la pièce, il refroidit la peau</h4>
+                                <h4 data-i18n="physio_title1">Le ventilateur ne refroidit pas la pièce, il refroidit la peau</h4>
                             </div>
-                            <p>
+                            <p data-i18n="physio_desc1">
                                 C'est l'un des malentendus les plus courants : un brasseur d'air n'abaisse pas la température physique (mesurée par un thermomètre classique). En revanche, il modifie la <strong>température ressentie</strong> en agissant sur les mécanismes de régulation thermique du corps humain.
                             </p>
                         </div>
@@ -957,9 +966,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">💧</span>
-                                <h4>Deux effets physiques majeurs</h4>
+                                <h4 data-i18n="physio_title2">Deux effets physiques majeurs</h4>
                             </div>
-                            <p>
+                            <p data-i18n="physio_desc2">
                                 <strong>1. L'accélération de l'évaporation (Effet principal) :</strong> Notre peau évapore continuellement une infime pellicule d'eau (la transpiration). Le flux d'air accélère cette évaporation. Ce changement d'état liquide-gaz est endothermique : il absorbe directement la chaleur de notre épiderme, créant une baisse immédiate de température cutanée.<br><br>
                                 <strong>2. La convection forcée :</strong> Notre corps chauffe naturellement l'air qui l'entoure immédiatement, créant une enveloppe d'air chaud et isolante (la couche limite). Le brasseur d'air balaie cette enveloppe chaude pour la remplacer par l'air ambiant de la pièce (s'il est plus frais que la température corporelle, soit < 37°C), facilitant la dissipation thermique de notre corps.
                             </p>
@@ -968,9 +977,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">💨</span>
-                                <h4>La règle d'or scientifique (1 m/s = -3°C)</h4>
+                                <h4 data-i18n="physio_title3">La règle d'or scientifique (1 m/s = -3°C)</h4>
                             </div>
-                            <p>
+                            <p data-i18n="physio_desc3">
                                 Les études issues des travaux bioclimatiques de Givoni et les normes de confort (ASHRAE 55) s'accordent sur un fait majeur : une vitesse d'air moyenne de <strong>1 m/s</strong> au niveau des occupants équivaut à un rafraîchissement ressenti de <strong>2°C à 4°C</strong> de moins. 
                                 Ainsi, à 30°C dans un espace brassé, votre corps se comporte exactement comme s'il faisait 26°C ou 27°C dans une pièce sans courant d'air.
                             </p>
@@ -984,19 +993,19 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">⚡</span>
-                                <h4>L'incroyable efficacité énergétique du mouvement</h4>
+                                <h4 data-i18n="energy_title1">L'incroyable efficacité énergétique du mouvement</h4>
                             </div>
-                            <p>
+                            <p data-i18n="energy_desc1">
                                 Sur le plan thermodynamique, modifier la température globale de milliers de mètres cubes d'air demande une quantité faramineuse d'énergie (utilisation d'un compresseur et cycle de réfrigération). Mettre en mouvement ce même volume pour refroidir uniquement les corps est infiniment plus sobre.
                             </p>
                             <div class="stats-grid">
                                 <div class="stat-item">
-                                    <div class="stat-number">15x à 40x</div>
-                                    <div class="stat-label">Moins d'énergie qu'une clim</div>
+                                    <div class="stat-number" data-i18n="energy_stat_ratio_num">15x à 40x</div>
+                                    <div class="stat-label" data-i18n="energy_stat_ratio_label">Moins d'énergie qu'une clim</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-number">15 à 35 W</div>
-                                    <div class="stat-label">Puissance type d'un BAP</div>
+                                    <div class="stat-number" data-i18n="energy_stat_power_num">15 à 35 W</div>
+                                    <div class="stat-label" data-i18n="energy_stat_power_label">Puissance type d'un BAP</div>
                                 </div>
                             </div>
                         </div>
@@ -1004,36 +1013,36 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">💰</span>
-                                <h4>Comparatif direct de consommation (Données ADEME)</h4>
+                                <h4 data-i18n="energy_title2">Comparatif direct de consommation (Données ADEME)</h4>
                             </div>
                             <table class="comparison-table">
                                 <thead>
                                     <tr>
-                                        <th>Critère</th>
-                                        <th>Climatiseur (Chambre 12m²)</th>
-                                        <th>Brasseur d'Air Plafonnier</th>
+                                        <th data-i18n="energy_table_th_criterion">Critère</th>
+                                        <th data-i18n="energy_table_th_ac">Climatiseur (Chambre 12m²)</th>
+                                        <th data-i18n="energy_table_th_fan">Brasseur d'Air Plafonnier</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Puissance électrique</td>
-                                        <td>1 000 W à 2 000 W</td>
-                                        <td><strong>15 W à 35 W</strong> (Moteur DC)</td>
+                                        <td data-i18n="energy_table_td_power_name">Puissance électrique</td>
+                                        <td data-i18n="energy_table_td_power_ac">1 000 W à 2 000 W</td>
+                                        <td data-i18n="energy_table_td_power_fan"><strong>15 W à 35 W</strong> (Moteur DC)</td>
                                     </tr>
                                     <tr>
-                                        <td>Consommation typique</td>
-                                        <td>500 kWh / an</td>
-                                        <td><strong>15 à 36 kWh / an</strong> (7% de la clim !)</td>
+                                        <td data-i18n="energy_table_td_consumption_name">Consommation typique</td>
+                                        <td data-i18n="energy_table_td_consumption_ac">500 kWh / an</td>
+                                        <td data-i18n="energy_table_td_consumption_fan"><strong>15 à 36 kWh / an</strong> (7% de la clim !)</td>
                                     </tr>
                                     <tr>
-                                        <td>Coût de fonctionnement</td>
-                                        <td>~120 € à 150 € / an</td>
-                                        <td><strong>~3 € à 8 € / an</strong></td>
+                                        <td data-i18n="energy_table_td_cost_name">Coût de fonctionnement</td>
+                                        <td data-i18n="energy_table_td_cost_ac">~120 € à 150 € / an</td>
+                                        <td data-i18n="energy_table_td_cost_fan"><strong>~3 € à 8 € / an</strong></td>
                                     </tr>
                                     <tr>
-                                        <td>Impact carbone</td>
-                                        <td>Élevé (fluides frigorigènes + élec)</td>
-                                        <td><strong>Négligeable</strong> (pas de fluides)</td>
+                                        <td data-i18n="energy_table_td_carbon_name">Impact carbone</td>
+                                        <td data-i18n="energy_table_td_carbon_ac">Élevé (fluides frigorigènes + élec)</td>
+                                        <td data-i18n="energy_table_td_carbon_fan"><strong>Négligeable</strong> (pas de fluides)</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1047,9 +1056,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">🤝</span>
-                                <h4>Climatisation + Brasseur : L'alliance thermodynamique gagnante</h4>
+                                <h4 data-i18n="couplage_title1">Climatisation + Brasseur : L'alliance thermodynamique gagnante</h4>
                             </div>
-                            <p>
+                            <p data-i18n="couplage_desc1">
                                 Dans les zones tropicales humides ou pendant les canicules extrêmes, la ventilation seule peut ne pas suffire pour atteindre la zone de confort. La solution idéale n'est pas d'allumer la clim à fond, mais d'adopter un <strong>fonctionnement couplé</strong>.
                             </p>
                         </div>
@@ -1057,9 +1066,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">📈</span>
-                                <h4>Remonter la consigne pour diviser les factures</h4>
+                                <h4 data-i18n="couplage_title2">Remonter la consigne pour diviser les factures</h4>
                             </div>
-                            <p>
+                            <p data-i18n="couplage_desc2">
                                 En faisant fonctionner simultanément un brasseur d'air plafonnier, la sensation de fraîcheur de 2°C à 3°C vous permet de régler le thermostat de votre climatisation à <strong>27°C au lieu de 25°C</strong> (ou 28°C au lieu de 26°C).<br><br>
                                 En physique des bâtiments, <strong>chaque degré supplémentaire sur la consigne de climatisation réduit la consommation d'énergie de 7% à 10%</strong>.
                             </p>
@@ -1068,15 +1077,15 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">🎯</span>
-                                <h4>Résultats des Simulations Dynamiques (ADEME - BRASSE)</h4>
-                                <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;">Études sur Pointe-à-Pitre (Guadeloupe)</span>
+                                <h4 data-i18n="couplage_title3">Résultats des Simulations Dynamiques (ADEME - BRASSE)</h4>
+                                <span style="font-size: 0.8rem; color: var(--text-light); font-weight: 500;" data-i18n="couplage_subtitle3">Études sur Pointe-à-Pitre (Guadeloupe)</span>
                             </div>
-                            <p>
+                            <p data-i18n="couplage_desc3">
                                 Des simulations thermiques dynamiques (STD) réalisées dans le cadre du programme public BRASSE ont prouvé l'efficacité de ce couplage :
                             </p>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); display:flex; flex-direction:column; gap:6px;">
-                                <li><strong>Cas N°1 (Chambre) :</strong> Le couplage (clim réglée à 27°C + BAP) réduit la facture annuelle de climatisation de <strong>27%</strong> par rapport à une clim seule réglée à 25°C. La consommation du brasseur ne pèse que 7% du total.</li>
-                                <li><strong>Cas N°2 (Bureau tertiaire) :</strong> La consigne relevée à 27°C avec le brasseur d'air génère <strong>20% d'économies d'énergie</strong> sur l'année. Le brasseur d'air ne représente que 4% des consommations du bureau.</li>
+                                <li data-i18n="couplage_li1"><strong>Cas N°1 (Chambre) :</strong> Le couplage (clim réglée à 27°C + BAP) réduit la facture annuelle de climatisation de <strong>27%</strong> par rapport à une clim seule réglée à 25°C. La consommation du brasseur ne pèse que 7% du total.</li>
+                                <li data-i18n="couplage_li2"><strong>Cas N°2 (Bureau tertiaire) :</strong> La consigne relevée à 27°C avec le brasseur d'air génère <strong>20% d'économies d'énergie</strong> sur l'année. Le brasseur d'air ne représente que 4% des consommations du bureau.</li>
                             </ul>
                         </div>
                     </div>
@@ -1088,9 +1097,9 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">☀️</span>
-                                <h4>Le mode été : Confort direct par flux vertical</h4>
+                                <h4 data-i18n="saisons_title1">Le mode été : Confort direct par flux vertical</h4>
                             </div>
-                            <p>
+                            <p data-i18n="saisons_desc1">
                                 En été (ou en climat tropical permanent), le ventilateur tourne dans le sens horaire direct pour propulser l'air du haut vers le bas. Ce flux d'air vertical vient directement balayer la peau des occupants présents dans le cône de soufflage, maximisant le rafraîchissement par évaporation de la sueur.
                             </p>
                         </div>
@@ -1098,16 +1107,16 @@
                         <div class="edu-card">
                             <div class="edu-card-header">
                                 <span class="edu-card-icon">❄️</span>
-                                <h4>Le mode hiver : La déstratification thermique</h4>
+                                <h4 data-i18n="saisons_title2">Le mode hiver : La déstratification thermique</h4>
                             </div>
-                            <p>
+                            <p data-i18n="saisons_desc2">
                                 C'est une loi physique incontournable : l'air chaud (plus léger) monte par convection naturelle et s'accumule sous le plafond. Dans une pièce haute de plafond, l'écart de température peut atteindre 5°C à 10°C entre le sol et le plafond (gaspillage d'énergie massif !).<br><br>
                                 En hiver, le brasseur d'air est utilisé pour la <strong>déstratification</strong> :
                             </p>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); display:flex; flex-direction:column; gap:6px;">
-                                <li>Il tourne généralement en <strong>mode inverse (anti-horaire)</strong> à basse vitesse pour propulser l'air doux vers le plafond.</li>
-                                <li>L'air s'étale sur le plafond et redescend doucement le long des murs sans générer de courant d'air direct froid sur les personnes.</li>
-                                <li>Cela homogénéise la chaleur dans toute la pièce, augmentant le confort au niveau du sol et réduisant les besoins de chauffage de l'ordre de <strong>5% à 10%</strong>.</li>
+                                <li data-i18n="saisons_li1">Il tourne généralement en <strong>mode inverse (anti-horaire)</strong> à basse vitesse pour propulser l'air doux vers le plafond.</li>
+                                <li data-i18n="saisons_li2">L'air s'étale sur le plafond et redescend doucement le long des murs sans générer de courant d'air direct froid sur les personnes.</li>
+                                <li data-i18n="saisons_li3">Cela homogénéise la chaleur dans toute la pièce, augmentant le confort au niveau du sol et réduisant les besoins de chauffage de l'ordre de <strong>5% à 10%</strong>.</li>
                             </ul>
                         </div>
                     </div>
@@ -1118,28 +1127,28 @@
 
     <!-- Footer -->
     <footer id="app-footer">
-        <p class="footer-intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
+        <p class="footer-intro" data-i18n="footer_intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
         <ul class="footer-sources">
             <li>
-                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
-                <span>Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
+                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse1">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
+                <span data-i18n="footer_sources_brasse1_credits">Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
             </li>
             <li>
-                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
-                <span>Crédits : Surya Consultants, LASA.</span>
+                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse2">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
+                <span data-i18n="footer_sources_brasse2_credits">Crédits : Surya Consultants, LASA.</span>
             </li>
         </ul>
-        <p>Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
+        <p data-i18n="footer_rules_interpretation">Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
         <div class="footer-project-links">
-            <span class="footer-version">Version 0.9.2</span>
+            <span class="footer-version" data-i18n="footer_version">Version 0.9.3</span>
             <a class="footer-github-link" href="https://github.com/guilamu/brasseur-dair" target="_blank" rel="noopener noreferrer" aria-label="Accéder au code source sur GitHub">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.15-3.2.7-3.88-1.36-3.88-1.36-.53-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.03 1.76 2.69 1.25 3.35.95.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.72 0-1.27.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.19 1.19a11.1 11.1 0 0 1 5.81 0c2.22-1.5 3.19-1.19 3.19-1.19.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.11 0 4.45-2.71 5.42-5.29 5.71.42.36.79 1.06.79 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
                 </svg>
-                <span>Code source</span>
+                <span data-i18n="footer_code_source">Code source</span>
             </a>
         </div>
-        <p class="disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
+        <p class="disclaimer" data-i18n="footer_disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
     </footer>
 
     <!-- Logic / Math & Interaction script -->
@@ -1150,10 +1159,39 @@
         let activeTheme = 'light';
 
         // Psychrometric scale settings
-        const T_MIN = 10;
-        const T_MAX = 40;
-        const X_MIN = 0;
-        const X_MAX = 28; // g/kg dry air
+        let T_MIN = 10;
+        let T_MAX = 40;
+        let X_MIN = 0;
+        let X_MAX = 28; // g/kg dry air
+
+        function updateScaleSettings() {
+            const isImperial = window.I18n.unit === 'imperial';
+            if (isImperial) {
+                T_MIN = 50;
+                T_MAX = 104;
+                X_MIN = 0;
+                X_MAX = 196;
+            } else {
+                T_MIN = 10;
+                T_MAX = 40;
+                X_MIN = 0;
+                X_MAX = 28;
+            }
+        }
+
+        function updateSliderBounds() {
+            const isImperial = window.I18n.unit === 'imperial';
+            const tempSlider = document.getElementById('temp-slider');
+            if (isImperial) {
+                tempSlider.min = "50";
+                tempSlider.max = "104";
+                tempSlider.step = "0.5";
+            } else {
+                tempSlider.min = "10";
+                tempSlider.max = "40";
+                tempSlider.step = "0.1";
+            }
+        }
         
         // SVG dimensions
         const svgW = 800;
@@ -1167,20 +1205,44 @@
         const graphH = svgH - mTop - mBottom;
 
         // Coordinate projection functions
+        function toRawSvgX(val) {
+            return mLeft + ((val - T_MIN) / (T_MAX - T_MIN)) * graphW;
+        }
+
+        function toRawSvgY(val) {
+            return svgH - mBottom - ((val - X_MIN) / (X_MAX - X_MIN)) * graphH;
+        }
+
         function toSvgX(T) {
-            return mLeft + ((T - T_MIN) / (T_MAX - T_MIN)) * graphW;
+            let val = T;
+            if (window.I18n.unit === 'imperial') {
+                val = T * 1.8 + 32;
+            }
+            return toRawSvgX(val);
         }
 
         function toSvgY(xVal) {
-            return svgH - mBottom - ((xVal - X_MIN) / (X_MAX - X_MIN)) * graphH;
+            let val = xVal;
+            if (window.I18n.unit === 'imperial') {
+                val = xVal * 7;
+            }
+            return toRawSvgY(val);
         }
 
         function fromSvgX(svgX) {
-            return T_MIN + ((svgX - mLeft) / graphW) * (T_MAX - T_MIN);
+            let val = T_MIN + ((svgX - mLeft) / graphW) * (T_MAX - T_MIN);
+            if (window.I18n.unit === 'imperial') {
+                val = (val - 32) / 1.8;
+            }
+            return val;
         }
 
         function fromSvgY(svgY) {
-            return X_MIN + ((svgH - mBottom - svgY) / graphH) * (X_MAX - X_MIN);
+            let val = X_MIN + ((svgH - mBottom - svgY) / graphH) * (X_MAX - X_MIN);
+            if (window.I18n.unit === 'imperial') {
+                val = val / 7;
+            }
+            return val;
         }
 
         // Thermodynamic equations for moist air
@@ -1350,9 +1412,11 @@
             xLabels.innerHTML = '';
             yLabels.innerHTML = '';
 
-            // Draw Temperature Grid Lines (Verticals, every 5°C)
-            for (let T = T_MIN; T <= T_MAX; T += 5) {
-                const svgX = toSvgX(T);
+            // Draw Temperature Grid Lines (Verticals, every 5°C or 10°F)
+            const isImperial = window.I18n.unit === 'imperial';
+            const tempStep = isImperial ? 10 : 5;
+            for (let T = T_MIN; T <= T_MAX; T += tempStep) {
+                const svgX = toRawSvgX(T);
                 
                 // Grid line
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1360,7 +1424,8 @@
                 line.setAttribute('y1', mTop);
                 line.setAttribute('x2', svgX);
                 line.setAttribute('y2', svgH - mBottom);
-                line.setAttribute('class', T === 20 || T === 30 ? 'svg-grid-line-main' : 'svg-grid-line');
+                const isMainLine = isImperial ? (T === 70 || T === 90) : (T === 20 || T === 30);
+                line.setAttribute('class', isMainLine ? 'svg-grid-line-main' : 'svg-grid-line');
                 gridGroup.appendChild(line);
 
                 // Label below x axis
@@ -1369,13 +1434,14 @@
                 text.setAttribute('y', svgH - mBottom + 20);
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('class', 'svg-chart-label');
-                text.textContent = `${T}°C`;
+                text.textContent = isImperial ? `${T}°F` : `${T}°C`;
                 xLabels.appendChild(text);
             }
 
-            // Draw Absolute Humidity Grid Lines (Horizontals, every 4 g/kg)
-            for (let xVal = X_MIN; xVal <= X_MAX; xVal += 4) {
-                const svgY = toSvgY(xVal);
+            // Draw Absolute Humidity Grid Lines (Horizontals, every 4 g/kg or 28 grains/lb)
+            const humStep = isImperial ? 28 : 4;
+            for (let xVal = X_MIN; xVal <= X_MAX; xVal += humStep) {
+                const svgY = toRawSvgY(xVal);
                 
                 // Grid line
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1383,7 +1449,8 @@
                 line.setAttribute('y1', svgY);
                 line.setAttribute('x2', svgW - mRight);
                 line.setAttribute('y2', svgY);
-                line.setAttribute('class', xVal === 12 || xVal === 18 ? 'svg-grid-line-main' : 'svg-grid-line');
+                const isMainLine = isImperial ? (xVal === 84 || xVal === 126) : (xVal === 12 || xVal === 18);
+                line.setAttribute('class', isMainLine ? 'svg-grid-line-main' : 'svg-grid-line');
                 gridGroup.appendChild(line);
 
                 // Label on Left Y axis
@@ -1409,7 +1476,7 @@
             const rhValues = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
             rhValues.forEach(rh => {
                 let points = [];
-                for (let T = T_MIN; T <= T_MAX; T += 0.5) {
+                for (let T = 10; T <= 40; T += 0.5) {
                     const xVal = calcX(T, rh);
                     points.push(`${toSvgX(T)},${toSvgY(xVal)}`);
                 }
@@ -1552,7 +1619,7 @@
                 
                 const textSpan = document.createElement('span');
                 textSpan.className = 'legend-text';
-                textSpan.textContent = zone.name;
+                textSpan.textContent = window.I18n.t(`zone_${zone.id}_name`);
 
                 item.appendChild(colorBox);
                 item.appendChild(textSpan);
@@ -1590,13 +1657,20 @@
 
         // Core dynamic update routine
         function updateState(temp, hum) {
-            activeTemp = parseFloat(temp);
+            const isImperial = window.I18n.unit === 'imperial';
+            let tempC = parseFloat(temp);
+            if (isImperial && tempC > 40) {
+                tempC = (tempC - 32) / 1.8;
+            }
+            activeTemp = tempC;
             activeHum = parseInt(hum);
 
             // Update UI slider values
-            document.getElementById('temp-val').textContent = `${activeTemp.toFixed(1)} °C`;
+            const tempDisplay = isImperial ? (activeTemp * 1.8 + 32).toFixed(1) : activeTemp.toFixed(1);
+            const tempUnit = isImperial ? '°F' : '°C';
+            document.getElementById('temp-val').textContent = `${tempDisplay} ${tempUnit}`;
             document.getElementById('hum-val').textContent = `${activeHum} %`;
-            document.getElementById('temp-slider').value = activeTemp;
+            document.getElementById('temp-slider').value = isImperial ? (activeTemp * 1.8 + 32).toFixed(1) : activeTemp;
             document.getElementById('hum-slider').value = activeHum;
 
             // Calculate moisture parameters
@@ -1641,11 +1715,11 @@
             const desc = document.getElementById('diag-desc');
             const action = document.getElementById('diag-action');
             
-            status.textContent = activeZone.statusText;
+            status.textContent = window.I18n.t(`zone_${activeZone.id}_statusText`);
             status.style.color = activeZone.color;
-            title.textContent = activeZone.name;
-            desc.textContent = activeZone.desc;
-            action.textContent = activeZone.action;
+            title.textContent = window.I18n.t(`zone_${activeZone.id}_name`);
+            desc.textContent = window.I18n.t(`zone_${activeZone.id}_desc`);
+            action.textContent = window.I18n.t(`zone_${activeZone.id}_action`);
             action.style.borderLeftColor = activeZone.color;
 
             // Diagnostic card soft accent border
@@ -1673,8 +1747,8 @@
                 fanIcon.classList.add('fan-spin-fast');
             }
 
-            fanLabel.textContent = activeZone.fanLabel;
-            fanDesc.textContent = activeZone.fanDesc;
+            fanLabel.textContent = window.I18n.t(`zone_${activeZone.id}_fanLabel`);
+            fanDesc.textContent = window.I18n.t(`zone_${activeZone.id}_fanDesc`);
         }
 
         // Tap/Click interaction on psychrometric chart SVG
@@ -1728,7 +1802,14 @@
                 tooltip.style.display = 'block';
                 tooltip.style.left = `${e.clientX - rect.left + 15}px`;
                 tooltip.style.top = `${e.clientY - rect.top + 15}px`;
-                tooltip.textContent = `${T.toFixed(1)}°C, ${Math.round(rh)}% HR (${xVal.toFixed(1)}g/kg)`;
+                const displayT = window.I18n.unit === 'imperial' ? T * 1.8 + 32 : T;
+                const displayX = window.I18n.unit === 'imperial' ? xVal * 7 : xVal;
+                tooltip.textContent = window.I18n.format(
+                    window.I18n.t('chart_tooltip_format'),
+                    displayT.toFixed(1),
+                    Math.round(rh),
+                    displayX.toFixed(1)
+                );
             } else {
                 tooltip.style.display = 'none';
             }
@@ -1897,6 +1978,27 @@
 
         // Initial launch
         window.addEventListener('DOMContentLoaded', () => {
+            // Initialize translations
+            window.I18n.init();
+            updateScaleSettings();
+            updateSliderBounds();
+
+            // Listen for language changes to update localized dynamic elements
+            window.addEventListener('languagechange', () => {
+                renderLegend();
+                updateState(activeTemp, activeHum);
+            });
+
+            // Listen for unit changes to update scale and redraw
+            window.addEventListener('unitchange', () => {
+                updateScaleSettings();
+                updateSliderBounds();
+                renderPsychrometricChart();
+                renderComfortZones();
+                renderLegend();
+                updateState(activeTemp, activeHum);
+            });
+
             // Theme initialization matching index.html
             const savedTheme = localStorage.getItem('brasse-theme');
             const icon = themeBtn ? themeBtn.querySelector('.theme-icon') : null;

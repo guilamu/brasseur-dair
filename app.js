@@ -5,19 +5,24 @@
 // ── Constants ──────────────────────────────────────
 const MARKET_DIAMETERS_CM = [70, 80, 90, 103, 107, 112, 122, 127, 132, 142, 152, 166];
 const EPSILON = 1e-9;
-const FORM_FACTOR_TOOLTIP = "Rapport entre la plus grande et la plus petite dimension d'une zone. Plus il est proche de 1, plus la zone est proche d'un carré et plus la diffusion de l'air a des chances d'être régulière.";
-const MOUNTING_TOOLTIPS = {
-    Standard: "Montage de référence avec une retombée d'environ 0,35 fois le diamètre. C'est le cas le plus favorable pour la performance.",
-    'Low-profile': "Montage plus proche du plafond, utilisé quand la hauteur manque pour un standard. Le brassage reste bon, mais la performance est un peu moins favorable.",
-    Flush: "Montage très plaqué au plafond. Cette configuration est généralement moins performante et doit être évitée si une autre solution est possible.",
-};
+function getFormFactorTooltip() {
+    return window.I18n.t('form_factor_tooltip');
+}
+function getMountingTooltip(mountingType) {
+    switch (mountingType) {
+        case 'Standard': return window.I18n.t('mounting_tooltip_standard');
+        case 'Low-profile': return window.I18n.t('mounting_tooltip_low_profile');
+        case 'Flush': return window.I18n.t('mounting_tooltip_flush');
+        default: return '';
+    }
+}
 
 const USAGE_DATA = {
-    chambre:  { label: "Chambre / Repos",            met: 0.8,  vMin: 0.4, vMax: 0.6, dbaMin: 18, dbaMax: 30 },
-    sejour:   { label: "Séjour / Activités douces",  met: 1.1,  vMin: 0.6, vMax: 0.8, dbaMin: 24, dbaMax: 34 },
-    bureau:   { label: "Bureau / Tertiaire",         met: 1.15, vMin: 0.8, vMax: 1.0, dbaMin: 26, dbaMax: 42 },
-    scolaire: { label: "Scolaire / Enseignement",    met: 1.3,  vMin: 0.8, vMax: 1.3, dbaMin: 32, dbaMax: 42 },
-    sport:    { label: "Sport / Activités soutenues", met: 1.5,  vMin: 1.3, vMax: 2.0, dbaMin: 38, dbaMax: 48 },
+    chambre:  { label: "usage_chambre",            met: 0.8,  vMin: 0.4, vMax: 0.6, dbaMin: 18, dbaMax: 30 },
+    sejour:   { label: "usage_sejour",             met: 1.1,  vMin: 0.6, vMax: 0.8, dbaMin: 24, dbaMax: 34 },
+    bureau:   { label: "usage_bureau",             met: 1.15, vMin: 0.8, vMax: 1.0, dbaMin: 26, dbaMax: 42 },
+    scolaire: { label: "usage_scolaire",           met: 1.3,  vMin: 0.8, vMax: 1.3, dbaMin: 32, dbaMax: 42 },
+    sport:    { label: "usage_sport",              met: 1.5,  vMin: 1.3, vMax: 2.0, dbaMin: 38, dbaMax: 48 },
 };
 
 // Approximate CE (°C) for given air speed (m/s)
@@ -37,7 +42,7 @@ function calculate(roomL, roomW, HSP, usage, userDiameterCm, options = {}) {
 
 function calculateDiagnostic(roomL, roomW, HSP, usage, userDiameterCm, options = {}) {
     if (!userDiameterCm) {
-        return { error: "Aucun diamètre manuel à diagnostiquer." };
+        return { error: window.I18n.t('error_no_manual_diameter') };
     }
 
     const targetFanCount = options.targetFanCount || null;
@@ -148,7 +153,7 @@ function calculateUniformMode(roomL, roomW, HSP, usage, userDiameterCm, targetFa
     }
 
     if (!bestConfig) {
-        return { error: "Aucune configuration viable trouvée. Vérifiez les dimensions (plafond trop bas ou pièce trop petite)." };
+        return { error: window.I18n.t('error_no_config_found') };
     }
 
     bestConfig.fanPositions = [];
@@ -257,7 +262,7 @@ function calculateUniformDiagnosticMode(roomL, roomW, HSP, usage, userDiameterCm
     }
 
     if (!bestConfig) {
-        return { error: "Aucune implantation de diagnostic n'a pu être générée pour ce diamètre manuel." };
+        return { error: window.I18n.t('error_no_diagnostic_possible') };
     }
 
     bestConfig.fanPositions = [];
@@ -390,6 +395,7 @@ function findLargestCompatibleMarketDiameter(dMinMeters, dMaxMeters) {
 // ── UI Controller ─────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+    window.I18n.init();
     const form = document.getElementById('calc-form');
     const logoIcon = document.querySelector('.logo-icon');
     const logoImage = logoIcon ? logoIcon.querySelector('img') : null;
@@ -404,10 +410,26 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initLogoSpin();
 
+    window.addEventListener('languagechange', () => {
+        updateUsageInfo();
+        if (form.checkValidity()) {
+            runCalculation();
+        }
+    });
+
+    window.addEventListener('unitchange', () => {
+        updateInputBounds();
+        updateUsageInfo();
+        if (form.checkValidity()) {
+            runCalculation();
+        }
+    });
+
     // Update usage info card on change
     usageSelect.addEventListener('change', () => {
         updateUsageInfo();
     });
+    updateInputBounds();
     updateUsageInfo();
 
     // Auto-calculate as values change
@@ -440,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const option = document.createElement('option');
             option.value = i;
             option.textContent = i === newOptimalCount
-                ? `${i} (recommandé)`
+                ? window.I18n.format(window.I18n.t('fan_count_recommended'), i)
                 : `${i}`;
             fanCountSelect.appendChild(option);
         }
@@ -452,31 +474,103 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateFanCountHint(result) {
         const selected = parseInt(fanCountSelect.value);
         if (selected === currentOptimalFanCount) {
-            fanCountHint.textContent = `Configuration optimale : ${currentOptimalFanCount} brasseur(s) de ${result.dCm} cm.`;
+            fanCountHint.textContent = window.I18n.format(window.I18n.t('fan_count_hint_optimal'), currentOptimalFanCount, result.dCm);
         } else {
             const ffWarning = result.ffCell >= 1.41
-                ? ` Attention : cellules allongées (FF = ${result.ffCell.toFixed(2)}), la diffusion sera moins régulière.`
+                ? window.I18n.format(window.I18n.t('fan_count_warning_ff'), result.ffCell.toFixed(2))
                 : '';
-            fanCountHint.textContent = `Avec ${selected} brasseur(s), le diamètre conseillé passe à ${result.dCm} cm.${ffWarning}`;
+            fanCountHint.textContent = window.I18n.format(window.I18n.t('fan_count_hint_reduced'), selected, result.dCm, ffWarning);
         }
     }
 
     function updateUsageInfo() {
         const u = USAGE_DATA[usageSelect.value];
-        document.getElementById('usage-info-title').textContent = u.label;
-        document.getElementById('usage-v-target').textContent = `${u.vMin.toFixed(1)} – ${u.vMax.toFixed(1)} m/s`;
+        document.getElementById('usage-info-title').textContent = window.I18n.t(u.label);
+        if (window.I18n.unit === 'imperial') {
+            document.getElementById('usage-v-target').textContent = `${Math.round(u.vMin * 196.85)} – ${Math.round(u.vMax * 196.85)} fpm`;
+        } else {
+            document.getElementById('usage-v-target').textContent = `${u.vMin.toFixed(1)} – ${u.vMax.toFixed(1)} m/s`;
+        }
         document.getElementById('usage-dba-target').textContent = `${u.dbaMin} – ${u.dbaMax} dBA`;
         document.getElementById('usage-met').textContent = `${u.met.toFixed(1)} met`;
     }
 
+    function updateInputBounds() {
+        const isImperial = window.I18n.unit === 'imperial';
+        
+        const lengthInput = document.getElementById('room-length');
+        const widthInput = document.getElementById('room-width');
+        const heightInput = document.getElementById('room-height');
+        const diameterInput = document.getElementById('fan-diameter');
+
+        if (isImperial) {
+            if (lengthInput.value && lengthInput.dataset.unitSys !== 'imperial') {
+                lengthInput.value = (parseFloat(lengthInput.value) * 3.28084).toFixed(1);
+            }
+            if (widthInput.value && widthInput.dataset.unitSys !== 'imperial') {
+                widthInput.value = (parseFloat(widthInput.value) * 3.28084).toFixed(1);
+            }
+            if (heightInput.value && heightInput.dataset.unitSys !== 'imperial') {
+                heightInput.value = (parseFloat(heightInput.value) * 3.28084).toFixed(1);
+            }
+            if (diameterInput.value && diameterInput.dataset.unitSys !== 'imperial') {
+                diameterInput.value = Math.round(parseFloat(diameterInput.value) / 2.54);
+            }
+
+            lengthInput.min = "3.3"; lengthInput.max = "164"; lengthInput.step = "0.1";
+            widthInput.min = "3.3"; widthInput.max = "164"; widthInput.step = "0.1";
+            heightInput.min = "6.6"; heightInput.max = "65"; heightInput.step = "0.1";
+            diameterInput.min = "16"; diameterInput.max = "120"; diameterInput.step = "1";
+            
+            lengthInput.dataset.unitSys = 'imperial';
+            widthInput.dataset.unitSys = 'imperial';
+            heightInput.dataset.unitSys = 'imperial';
+            diameterInput.dataset.unitSys = 'imperial';
+        } else {
+            if (lengthInput.value && lengthInput.dataset.unitSys === 'imperial') {
+                lengthInput.value = (parseFloat(lengthInput.value) / 3.28084).toFixed(2);
+            }
+            if (widthInput.value && widthInput.dataset.unitSys === 'imperial') {
+                widthInput.value = (parseFloat(widthInput.value) / 3.28084).toFixed(2);
+            }
+            if (heightInput.value && heightInput.dataset.unitSys === 'imperial') {
+                heightInput.value = (parseFloat(heightInput.value) / 3.28084).toFixed(2);
+            }
+            if (diameterInput.value && diameterInput.dataset.unitSys === 'imperial') {
+                diameterInput.value = Math.round(parseFloat(diameterInput.value) * 2.54);
+            }
+
+            lengthInput.min = "1"; lengthInput.max = "50"; lengthInput.step = "0.01";
+            widthInput.min = "1"; widthInput.max = "50"; widthInput.step = "0.01";
+            heightInput.min = "2"; heightInput.max = "20"; heightInput.step = "0.01";
+            diameterInput.min = "40"; diameterInput.max = "300"; diameterInput.step = "1";
+
+            lengthInput.dataset.unitSys = 'metric';
+            widthInput.dataset.unitSys = 'metric';
+            heightInput.dataset.unitSys = 'metric';
+            diameterInput.dataset.unitSys = 'metric';
+        }
+    }
+
     function runCalculation() {
-        const L = parseFloat(document.getElementById('room-length').value);
-        const W = parseFloat(document.getElementById('room-width').value);
-        const H = parseFloat(document.getElementById('room-height').value);
+        let L = parseFloat(document.getElementById('room-length').value);
+        let W = parseFloat(document.getElementById('room-width').value);
+        let H = parseFloat(document.getElementById('room-height').value);
         const usage = usageSelect.value;
-        const fanD = document.getElementById('fan-diameter').value ? parseFloat(document.getElementById('fan-diameter').value) : null;
+        let fanD = document.getElementById('fan-diameter').value ? parseFloat(document.getElementById('fan-diameter').value) : null;
 
         if (!L || !W || !H) return;
+
+        // Convert inputs from Imperial to Metric if necessary before calculations
+        const isImperial = window.I18n.unit === 'imperial';
+        if (isImperial) {
+            L = L / 3.28084;
+            W = W / 3.28084;
+            H = H / 3.28084;
+            if (fanD !== null) {
+                fanD = fanD * 2.54;
+            }
+        }
 
         // Phase 1: Calculate optimal (no constraints) to get the reference fan count
         const optimalResult = calculate(L, W, H, usage, null);
@@ -654,9 +748,9 @@ function displayResults(r) {
 
     // Summary cards
     document.getElementById('result-num-fans').textContent = r.numFans;
-    document.getElementById('result-diameter').textContent = r.dCm;
-    document.getElementById('result-mounting').textContent = r.mountingType;
-    document.getElementById('result-ce').textContent = `~${r.ceEstimate.toFixed(1)}`;
+    document.getElementById('result-diameter').textContent = formatDiameter(r.dCm, false);
+    document.getElementById('result-mounting').textContent = window.I18n.t(r.mountingType);
+    document.getElementById('result-ce').textContent = `~${formatTempDiff(r.ceEstimate, false)}`;
 
     // Animate cards
     document.querySelectorAll('.summary-card').forEach((card, i) => {
@@ -675,7 +769,7 @@ function displayResults(r) {
         li.className = `constraint-item ${c.status}`;
         li.innerHTML = `
             <span class="constraint-icon">${c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'}</span>
-            <span class="constraint-label">${c.label} <span style="opacity:0.5">${c.detail}</span></span>
+            <span class="constraint-label">${window.I18n.t(c.labelKey)} <span style="opacity:0.5">${c.detail}</span></span>
             <span class="constraint-value">${c.value}</span>
         `;
         constraintsList.appendChild(li);
@@ -688,26 +782,27 @@ function displayResults(r) {
     explanation.innerHTML = shouldHideExplanation ? '' : buildResultExplanation(r);
 
     // Detailed metrics
+    const isImperial = window.I18n.unit === 'imperial';
     const metricsGrid = document.getElementById('metrics-grid');
     metricsGrid.innerHTML = '';
     const metrics = [
-        ['Surface pièce', `${(r.L * r.W).toFixed(1)} m²`],
-        ['Nb cellules', `${r.nx} × ${r.ny} = ${r.numFans}`],
-        ['Dim. cellule', `${r.cellL.toFixed(2)} × ${r.cellW.toFixed(2)} m`],
-        ['Surface cellule', `${r.cellArea.toFixed(1)} m²`],
-        ['D idéal', `${r.dCm} cm`],
-        ['Plage D acceptable', `${Math.ceil(r.dMinFCC * 100)} – ${Math.floor(r.dMax * 100)} cm`],
-        ['D min (FCC=0.2)', `${(r.dMinFCC * 100).toFixed(0)} cm`],
-        ['D max (FCC=0.4)', `${(r.dMaxFCC * 100).toFixed(0)} cm`],
-        ['D max global', `${(r.dMax * 100).toFixed(0)} cm`],
-        ['H montage', `${(r.hMontage * 100).toFixed(0)} cm`],
-        ['H pales (sol)', `${(r.hPales * 100).toFixed(0)} cm`],
-        ['V air estimée', `~${r.vAirEstimate.toFixed(2)} m/s`],
-        ['Perf. montage', `${(r.mountingFactor * 100).toFixed(0)}%`],
+        [window.I18n.t('metric_room_area'), isImperial ? `${(r.L * r.W * 10.7639).toFixed(0)} sq ft` : `${(r.L * r.W).toFixed(1)} m²`],
+        [window.I18n.t('metric_cell_count'), `${r.nx} × ${r.ny} = ${r.numFans}`],
+        [window.I18n.t('metric_cell_dim'), isImperial ? `${(r.cellL * 3.28084).toFixed(1)} × ${(r.cellW * 3.28084).toFixed(1)} ft` : `${r.cellL.toFixed(2)} × ${r.cellW.toFixed(2)} m`],
+        [window.I18n.t('metric_cell_area'), isImperial ? `${(r.cellArea * 10.7639).toFixed(0)} sq ft` : `${r.cellArea.toFixed(1)} m²`],
+        [window.I18n.t('metric_d_ideal'), formatDiameter(r.dCm)],
+        [window.I18n.t('metric_d_range'), isImperial ? `${Math.ceil(r.dMinFCC * 39.37)} – ${Math.floor(r.dMax * 39.37)} in` : `${Math.ceil(r.dMinFCC * 100)} – ${Math.floor(r.dMax * 100)} cm`],
+        [window.I18n.t('metric_d_min'), isImperial ? `${(r.dMinFCC * 39.37).toFixed(0)} in` : `${(r.dMinFCC * 100).toFixed(0)} cm`],
+        [window.I18n.t('metric_d_max_fcc'), isImperial ? `${(r.dMaxFCC * 39.37).toFixed(0)} in` : `${(r.dMaxFCC * 100).toFixed(0)} cm`],
+        [window.I18n.t('metric_d_max_global'), isImperial ? `${(r.dMax * 39.37).toFixed(0)} in` : `${(r.dMax * 100).toFixed(0)} cm`],
+        [window.I18n.t('metric_h_mounting'), formatHeight(r.hMontage)],
+        [window.I18n.t('metric_h_blades'), formatHeight(r.hPales)],
+        [window.I18n.t('metric_v_air'), formatSpeed(r.vAirEstimate)],
+        [window.I18n.t('metric_mounting_perf'), `${(r.mountingFactor * 100).toFixed(0)}%`],
     ];
 
     if (r.isReducedFanCount) {
-        metrics.unshift(['Choix utilisateur', `${r.numFans} / ${r.optimalFanCount} optimal`]);
+        metrics.unshift([window.I18n.t('metric_user_choice'), `${r.numFans} / ${r.optimalFanCount} ${window.I18n.t('metric_optimal')}`]);
     }
 
     metrics.forEach(([label, value]) => {
@@ -722,22 +817,23 @@ function displayResults(r) {
 
     // Diameter recommendation
     const recDiv = document.getElementById('diameter-recommendation');
-    const dMinCm = Math.ceil(r.dMinFCC * 100);
-    const dMaxCm = Math.floor(r.dMax * 100);
-    const idealCm = Math.max(dMinCm, Math.min(r.dCm, dMaxCm));
-    const sliderDisabled = dMinCm >= dMaxCm;
+    const dMin = isImperial ? Math.ceil(r.dMinFCC * 39.37) : Math.ceil(r.dMinFCC * 100);
+    const dMax = isImperial ? Math.floor(r.dMax * 39.37) : Math.floor(r.dMax * 100);
+    const ideal = isImperial ? Math.max(dMin, Math.min(Math.round(r.dCm / 2.54), dMax)) : Math.max(dMin, Math.min(r.dCm, dMax));
+    const sliderDisabled = dMin >= dMax;
+    const unitText = isImperial ? 'in' : 'cm';
 
     recDiv.innerHTML = `
         <div class="diameter-ideal-display">
-            <span class="diameter-ideal-number">${idealCm}</span>
-            <span class="diameter-ideal-unit">cm</span>
+            <span class="diameter-ideal-number">${ideal}</span>
+            <span class="diameter-ideal-unit">${unitText}</span>
         </div>
-        <div class="diameter-range-info">Plage acceptable : ${dMinCm} – ${dMaxCm} cm</div>
+        <div class="diameter-range-info">${window.I18n.format(window.I18n.t('diameter_range_label'), dMin, dMax)}</div>
         <div class="diameter-range-bar-container">
-            <input type="range" class="diameter-slider" min="${dMinCm}" max="${dMaxCm}" value="${idealCm}" step="1"${sliderDisabled ? ' disabled' : ''}>
+            <input type="range" class="diameter-slider" min="${dMin}" max="${dMax}" value="${ideal}" step="1"${sliderDisabled ? ' disabled' : ''}>
             <div class="diameter-range-endpoints">
-                <span>${dMinCm} cm</span>
-                <span>${dMaxCm} cm</span>
+                <span>${dMin} ${unitText}</span>
+                <span>${dMax} ${unitText}</span>
             </div>
         </div>
     `;
@@ -761,88 +857,118 @@ function displayResults(r) {
 
 function buildResultExplanation(r) {
     const paragraphs = [];
+    const isImperial = window.I18n.unit === 'imperial';
 
     if (r.isReducedFanCount) {
-        paragraphs.push(`Vous avez choisi de réduire le nombre de brasseurs de ${r.optimalFanCount} (optimal) à ${r.numFans}. Ce choix augmente la taille des cellules de couverture et nécessite un diamètre plus important par brasseur.`);
+        paragraphs.push(window.I18n.format(window.I18n.t('explanation_reduced_count'), r.optimalFanCount, r.numFans));
     }
 
     const roomFF = r.L / r.W;
     const positions = r.fanPositions
-        .map((pos, index) => `brasseur ${index + 1} à ${formatMeters(pos.x)} m du mur gauche et ${formatMeters(pos.y)} m du mur haut`)
-        .join(' ; ');
+        .map((pos, index) => window.I18n.format(window.I18n.t('explanation_fan_position'), index + 1, formatMeters(pos.x), formatMeters(pos.y)))
+        .join(window.I18n.t('limit_and') === ' et ' ? ' ; ' : ', ');
 
     const cellExplanation = r.numFans === 1
-        ? `La pièce est traitée comme une seule cellule de ${formatMeters(r.cellL)} m x ${formatMeters(r.cellW)} m. Le ${buildTooltip('facteur de forme', FORM_FACTOR_TOOLTIP)} de la pièce est ${formatNumber(roomFF)}, ce qui reste compatible avec une implantation symétrique sans découpage supplémentaire.`
-        : `La pièce de ${formatMeters(r.L)} m x ${formatMeters(r.W)} m est découpée en ${r.nx} x ${r.ny} cellules, soit ${r.numFans} zones identiques de ${formatMeters(r.cellL)} m x ${formatMeters(r.cellW)} m. Ce découpage ramène le ${buildTooltip('facteur de forme', FORM_FACTOR_TOOLTIP)} de ${formatNumber(roomFF)} à ${formatNumber(r.ffCell)} par cellule, ce qui rapproche l'implantation d'une configuration plus régulière.`;
+        ? window.I18n.format(window.I18n.t('explanation_single_cell'), formatMeters(r.cellL), formatMeters(r.cellW), buildTooltip(window.I18n.t('facteur_de_forme_term'), getFormFactorTooltip()), formatNumber(roomFF))
+        : window.I18n.format(window.I18n.t('explanation_multi_cell'), formatMeters(r.L), formatMeters(r.W), r.nx, r.ny, r.numFans, formatMeters(r.cellL), formatMeters(r.cellW), buildTooltip(window.I18n.t('facteur_de_forme_term'), getFormFactorTooltip()), formatNumber(roomFF), formatNumber(r.ffCell));
 
     const placementExplanation = r.numFans === 1
-        ? `Le brasseur est placé au centre de la pièce, à la position (${formatMeters(r.fanPositions[0].x)} m ; ${formatMeters(r.fanPositions[0].y)} m). Cette position centrée maximise la symétrie de diffusion et laisse ${formatMeters(r.distWall)} m jusqu'au mur le plus proche.`
-        : `Chaque brasseur est placé au centre de sa cellule pour respecter la règle de symétrie. En lisant le plan de gauche à droite, cela donne : ${positions}. La distance au mur la plus faible vaut ${formatMeters(r.distWall)} m et l'entraxe minimal entre deux brasseurs vaut ${formatMeters(r.interDist)} m.`;
+        ? window.I18n.format(window.I18n.t('explanation_single_placement'), formatMeters(r.fanPositions[0].x), formatMeters(r.fanPositions[0].y), formatMeters(r.distWall))
+        : window.I18n.format(window.I18n.t('explanation_multi_placement'), positions, formatMeters(r.distWall), formatMeters(r.interDist));
 
-    const diameterExplanation = `Le diamètre calculé retenu par l'application est de ${r.dCm} cm. Pour cette surface à ventiler, un diamètre cohérent se situe ici entre ${Math.ceil(r.dMinFCC * 100)} cm et ${Math.floor(r.dMaxFCC * 100)} cm. Le diamètre maximal global est de ${Math.floor(r.dMax * 100)} cm, limité principalement par ${describeLimitingConstraints(r)}.`;
+    const dVal = isImperial ? Math.round(r.dCm / 2.54) : r.dCm;
+    const dMinFCCVal = isImperial ? Math.ceil(r.dMinFCC * 39.37) : Math.ceil(r.dMinFCC * 100);
+    const dMaxFCCVal = isImperial ? Math.floor(r.dMaxFCC * 39.37) : Math.floor(r.dMaxFCC * 100);
+    const dMaxVal = isImperial ? Math.floor(r.dMax * 39.37) : Math.floor(r.dMax * 100);
 
-    const marketExplanation = `Tout diamètre compris entre ${Math.ceil(r.dMinFCC * 100)} cm et ${Math.floor(r.dMax * 100)} cm convient. L'application retient le diamètre le plus grand possible (${r.dCm} cm) pour maximiser le confort.`;
+    const hPalesVal = isImperial ? (r.hPales * 3.28084).toFixed(1) : (r.hPales * 100).toFixed(0);
+    const hMontageVal = isImperial ? (r.hMontage * 3.28084).toFixed(1) : (r.hMontage * 100).toFixed(0);
+    const securityHeightVal = isImperial ? (r.securityHeight * 3.28084).toFixed(1) : (r.securityHeight * 100).toFixed(0);
 
-    const mountingExplanation = `Le montage retenu est ${buildMountingTooltip(r.mountingType)}. Le plan de rotation des pâles est positionné à ${(r.hPales * 100).toFixed(0)} cm du sol et à ${(r.hMontage * 100).toFixed(0)} cm sous le plafond. Cette implantation respecte la hauteur minimale de sécurité de ${(r.securityHeight * 100).toFixed(0)} cm et ${r.mountingType === 'Standard' ? 'conserve la distance de montage optimale de référence' : 'abaisse les pâles au plus bas autorisé pour préserver au mieux la performance'}.`;
+    const diameterExplanation = window.I18n.format(window.I18n.t('explanation_diameter'), dVal, dMinFCCVal, dMaxFCCVal, dMaxVal, describeLimitingConstraints(r));
 
-    const performanceExplanation = `Avec cette configuration, l'application estime une vitesse d'air moyenne d'environ ${formatNumber(r.vAirEstimate)} m/s pour un effet rafraîchissant proche de ${formatNumber(r.ceEstimate)} °C. Le niveau de performance de montage retenu est de ${(r.mountingFactor * 100).toFixed(0)}%.`;
+    const marketExplanation = window.I18n.format(window.I18n.t('explanation_market'), dMinFCCVal, dMaxVal, dVal);
 
-    paragraphs.push(
-        cellExplanation,
-        placementExplanation,
-        diameterExplanation,
-        marketExplanation,
-        mountingExplanation,
-        performanceExplanation,
-    );
+    const mountingExplanation = window.I18n.format(window.I18n.t('explanation_mounting'), buildMountingTooltip(r.mountingType), hPalesVal, hMontageVal, securityHeightVal, r.mountingType === 'Standard' ? window.I18n.t('explanation_mounting_standard') : window.I18n.t('explanation_mounting_low_profile'));
+
+    const vAirVal = isImperial ? Math.round(r.vAirEstimate * 196.85) : r.vAirEstimate.toFixed(2);
+    const ceVal = isImperial ? (r.ceEstimate * 1.8).toFixed(1) : r.ceEstimate.toFixed(1);
+
+    const performanceExplanation = window.I18n.format(window.I18n.t('explanation_performance'), vAirVal, ceVal, (r.mountingFactor * 100).toFixed(0));
+
+    paragraphs.push(cellExplanation);
+    paragraphs.push(placementExplanation);
+    paragraphs.push(diameterExplanation);
+    paragraphs.push(marketExplanation);
+    paragraphs.push(mountingExplanation);
+    paragraphs.push(performanceExplanation);
 
     return paragraphs.map(paragraph => `<p>${paragraph}</p>`).join('');
 }
 
 function buildConstraintChecks(r) {
-    const hPalesDetail = r.D < 2.13 ? `≥ 213 cm` : `[max(3m; 0,8D) – 1,2D]`;
+    const isImperial = window.I18n.unit === 'imperial';
+    const hPalesDetail = isImperial 
+        ? (r.D < 2.13 ? `≥ 7.0 ft` : `[max(10ft; 0.8D) – 1.2D]`)
+        : (r.D < 2.13 ? `≥ 213 cm` : `[max(3m; 0,8D) – 1,2D]`);
     const hMontageMinAllowed = r.hMontageMinAllowed || 0.25 * r.D;
 
     const constraints = [
         {
             id: 'fcc',
-            label: `FCC (facteur de couverture)`,
+            labelKey: 'constraint_fcc',
             value: r.fcc.toFixed(2),
             status: (r.fcc >= 0.2 && r.fcc <= 0.4) ? 'pass' : 'fail',
             detail: `[0,20 – 0,40]`
         },
         {
             id: 'ff',
-            label: `FF (facteur de forme cellule)`,
+            labelKey: 'constraint_ff',
             value: r.ffCell.toFixed(2),
             status: r.ffCell < 1.41 ? 'pass' : (r.isReducedFanCount ? 'warn' : 'fail'),
             detail: `< 1,41 (√2)`
         },
         {
             id: 'wall',
-            label: `Distance aux murs (P > D)`,
-            value: `${(r.distWall * 100).toFixed(0)} cm > ${r.dCm} cm`,
+            labelKey: 'constraint_wall',
+            value: isImperial 
+                ? `${(r.distWall * 3.28084).toFixed(1)} ft > ${(r.D * 3.28084).toFixed(1)} ft`
+                : `${(r.distWall * 100).toFixed(0)} cm > ${r.dCm} cm`,
             status: r.wallOk ? 'pass' : 'fail',
-            detail: `P = ${(r.distWall).toFixed(2)} m`
+            detail: isImperial 
+                ? `P = ${(r.distWall * 3.28084).toFixed(1)} ft`
+                : `P = ${(r.distWall).toFixed(2)} m`
         },
         {
             id: 'inter',
-            label: `Distance inter-brasseurs (E > 2,5D)`,
-            value: r.interDist ? `${(r.interDist * 100).toFixed(0)} cm > ${(2.5 * r.dCm).toFixed(0)} cm` : 'N/A (1 seul)',
+            labelKey: 'constraint_inter',
+            value: r.interDist 
+                ? (isImperial 
+                    ? `${(r.interDist * 3.28084).toFixed(1)} ft > ${(2.5 * r.D * 3.28084).toFixed(1)} ft`
+                    : `${(r.interDist * 100).toFixed(0)} cm > ${(2.5 * r.dCm).toFixed(0)} cm`)
+                : window.I18n.t('constraint_na_single'),
             status: r.numFans === 1 ? 'pass' : r.interOk ? 'pass' : 'fail',
-            detail: r.interDist ? `E = ${r.interDist.toFixed(2)} m` : ''
+            detail: r.interDist 
+                ? (isImperial 
+                    ? `E = ${(r.interDist * 3.28084).toFixed(1)} ft`
+                    : `E = ${r.interDist.toFixed(2)} m`)
+                : ''
         },
         {
             id: 'mounting',
-            label: `Distance de montage`,
-            value: `${(r.hMontage * 100).toFixed(0)} cm (${r.mountingType})`,
+            labelKey: 'constraint_mounting',
+            value: isImperial 
+                ? `${(r.hMontage * 3.28084).toFixed(1)} ft (${window.I18n.t(r.mountingType)})`
+                : `${(r.hMontage * 100).toFixed(0)} cm (${window.I18n.t(r.mountingType)})`,
             status: r.hMontage + EPSILON >= hMontageMinAllowed ? 'pass' : 'fail',
             detail: `[0,25D – 0,35D]`
         },
         {
             id: 'blade-height',
-            label: `Hauteur des pales`,
-            value: `${(r.hPales * 100).toFixed(0)} cm`,
+            labelKey: 'constraint_blade_height',
+            value: isImperial 
+                ? `${(r.hPales * 3.28084).toFixed(1)} ft`
+                : `${(r.hPales * 100).toFixed(0)} cm`,
             status: r.hPalesOk ? 'pass' : 'fail',
             detail: hPalesDetail
         },
@@ -851,10 +977,10 @@ function buildConstraintChecks(r) {
     if (r.isReducedFanCount) {
         constraints.unshift({
             id: 'fan-count',
-            label: `Nombre de brasseurs réduit`,
-            value: `${r.numFans} / ${r.optimalFanCount} optimal`,
+            labelKey: 'constraint_reduced_count',
+            value: `${r.numFans} / ${r.optimalFanCount} ${window.I18n.t('metric_optimal')}`,
             status: 'warn',
-            detail: `choix utilisateur`
+            detail: window.I18n.t('constraint_user_choice')
         });
     }
 
@@ -867,29 +993,29 @@ function getConstraintFailureLabels(r) {
         .map(item => {
             switch (item.id) {
                 case 'fcc':
-                    return 'Diamètre hors plage pour la surface traitée';
+                    return window.I18n.t('badge_fcc');
                 case 'ff':
-                    return 'Cellule trop allongée';
+                    return window.I18n.t('badge_ff');
                 case 'wall':
-                    return 'Distance au mur insuffisante';
+                    return window.I18n.t('badge_wall');
                 case 'inter':
-                    return 'Entraxe insuffisant';
+                    return window.I18n.t('badge_inter');
                 case 'mounting':
-                    return 'Distance de montage trop faible';
+                    return window.I18n.t('badge_mounting');
                 case 'blade-height':
-                    return 'Hauteur des pales insuffisante';
+                    return window.I18n.t('badge_blade_height');
                 default:
-                    return item.label;
+                    return window.I18n.t(item.labelKey);
             }
         });
 }
 
 function describeLimitingConstraints(r) {
     const constraints = [
-        { label: 'la taille de la surface à ventiler', value: r.dMaxFCC },
-        { label: 'la distance aux murs', value: r.dMaxWall },
-        { label: 'la distance entre brasseurs', value: r.dMaxInter },
-        { label: 'la hauteur disponible', value: r.dMaxHeight },
+        { label: window.I18n.t('limit_surface_size'), value: r.dMaxFCC },
+        { label: window.I18n.t('limit_wall_distance'), value: r.dMaxWall },
+        { label: window.I18n.t('limit_inter_fan_distance'), value: r.dMaxInter },
+        { label: window.I18n.t('limit_available_height'), value: r.dMaxHeight },
     ].filter(item => Number.isFinite(item.value));
 
     const minValue = Math.min(...constraints.map(item => item.value));
@@ -898,7 +1024,7 @@ function describeLimitingConstraints(r) {
         .map(item => item.label);
 
     if (active.length === 1) return active[0];
-    return active.join(' et ');
+    return active.join(window.I18n.t('limit_and'));
 }
 
 function formatNumber(value) {
@@ -906,7 +1032,50 @@ function formatNumber(value) {
 }
 
 function formatMeters(value) {
+    if (window.I18n.unit === 'imperial') {
+        return (value * 3.28084).toFixed(1);
+    }
     return formatNumber(value);
+}
+
+function formatLength(valueMeters, includeUnit = true) {
+    if (window.I18n.unit === 'imperial') {
+        const feet = valueMeters * 3.28084;
+        return feet.toFixed(1) + (includeUnit ? ' ft' : '');
+    }
+    return valueMeters.toFixed(2) + (includeUnit ? ' m' : '');
+}
+
+function formatHeight(valueMeters, includeUnit = true) {
+    if (window.I18n.unit === 'imperial') {
+        const feet = valueMeters * 3.28084;
+        return feet.toFixed(1) + (includeUnit ? ' ft' : '');
+    }
+    return (valueMeters * 100).toFixed(0) + (includeUnit ? ' cm' : '');
+}
+
+function formatDiameter(valueCm, includeUnit = true) {
+    if (window.I18n.unit === 'imperial') {
+        const inches = valueCm / 2.54;
+        return Math.round(inches) + (includeUnit ? ' in' : '');
+    }
+    return Math.round(valueCm) + (includeUnit ? ' cm' : '');
+}
+
+function formatSpeed(valueMps, includeUnit = true) {
+    if (window.I18n.unit === 'imperial') {
+        const fpm = valueMps * 196.85;
+        return Math.round(fpm) + (includeUnit ? ' fpm' : '');
+    }
+    return valueMps.toFixed(2) + (includeUnit ? ' m/s' : '');
+}
+
+function formatTempDiff(valueC, includeUnit = true) {
+    if (window.I18n.unit === 'imperial') {
+        const f = valueC * 1.8;
+        return f.toFixed(1) + (includeUnit ? ' °F' : '');
+    }
+    return valueC.toFixed(1) + (includeUnit ? ' °C' : '');
 }
 
 function escapeHtml(value) {
@@ -923,8 +1092,8 @@ function buildTooltip(text, tooltip) {
 }
 
 function buildMountingTooltip(mountingType) {
-    const tooltip = MOUNTING_TOOLTIPS[mountingType];
-    return tooltip ? buildTooltip(mountingType, tooltip) : escapeHtml(mountingType);
+    const tooltip = getMountingTooltip(mountingType);
+    return tooltip ? buildTooltip(window.I18n.t(mountingType), tooltip) : escapeHtml(window.I18n.t(mountingType));
 }
 
 // ── Canvas Theme Helper ───────────────────────────
@@ -1076,10 +1245,10 @@ function drawPlanView(r) {
     ctx.textAlign = 'center';
 
     // Room length (top)
-    drawDimension(ctx, offsetX, offsetY - 18, offsetX + roomPxW, offsetY - 18, `${r.L.toFixed(2)} m`, C.dimColor);
+    drawDimension(ctx, offsetX, offsetY - 18, offsetX + roomPxW, offsetY - 18, formatLength(r.L), C.dimColor);
 
     // Room width (left)
-    drawDimensionVertical(ctx, offsetX - 18, offsetY, offsetX - 18, offsetY + roomPxH, `${r.W.toFixed(2)} m`, C.dimColor);
+    drawDimensionVertical(ctx, offsetX - 18, offsetY, offsetX - 18, offsetY + roomPxH, formatLength(r.W), C.dimColor);
 
     // Cell dimensions (if multiple cells)
     if (r.nx > 1 || r.ny > 1) {
@@ -1089,11 +1258,11 @@ function drawPlanView(r) {
         
         // Cell length (bottom of first cell)
         if (r.nx > 1) {
-            drawDimension(ctx, offsetX, offsetY + roomPxH + 20, offsetX + cellPxW, offsetY + roomPxH + 20, `${r.cellL.toFixed(2)} m`, cellDimColor);
+            drawDimension(ctx, offsetX, offsetY + roomPxH + 20, offsetX + cellPxW, offsetY + roomPxH + 20, formatLength(r.cellL), cellDimColor);
         }
         // Cell width (right of first cell)
         if (r.ny > 1) {
-            drawDimensionVertical(ctx, offsetX + roomPxW + 20, offsetY, offsetX + roomPxW + 20, offsetY + cellPxH, `${r.cellW.toFixed(2)} m`, cellDimColor);
+            drawDimensionVertical(ctx, offsetX + roomPxW + 20, offsetY, offsetX + roomPxW + 20, offsetY + cellPxH, formatLength(r.cellW), cellDimColor);
         }
     }
 
@@ -1124,7 +1293,8 @@ function drawPlanView(r) {
         ctx.fillStyle = wallColor;
         ctx.font = '10px Inter, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`P=${(nearest.dist * 100).toFixed(0)}cm`, (cx + nearest.x) / 2 + 5, (cy + nearest.y) / 2);
+        const distLabel = isImperial ? `${(nearest.dist * 3.28084).toFixed(1)} ft` : `${(nearest.dist * 100).toFixed(0)} cm`;
+        ctx.fillText(`P=${distLabel}`, (cx + nearest.x) / 2 + 5, (cy + nearest.y) / 2);
     }
 
     if (failedConstraintIds.has('inter') && r.fanPositions.length > 1) {
@@ -1149,7 +1319,8 @@ function drawPlanView(r) {
             ctx.fillStyle = 'rgba(255, 107, 107, 0.9)';
             ctx.font = '10px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`E=${(pair.distance * 100).toFixed(0)}cm`, (x1 + x2) / 2, (y1 + y2) / 2 - 8);
+            const interLabel = isImperial ? `${(pair.distance * 3.28084).toFixed(1)} ft` : `${(pair.distance * 100).toFixed(0)} cm`;
+            ctx.fillText(`E=${interLabel}`, (x1 + x2) / 2, (y1 + y2) / 2 - 8);
         }
     }
 
@@ -1380,19 +1551,19 @@ function drawSectionView(r) {
     // ── Dimension annotations ──
 
     // HSP (left side)
-    drawDimensionVertical(ctx, offsetX - 25, offsetY, offsetX - 25, offsetY + roomPxH, `HSP ${r.HSP.toFixed(2)} m`, C.dimColor);
+    drawDimensionVertical(ctx, offsetX - 25, offsetY, offsetX - 25, offsetY + roomPxH, `${window.I18n.t('canvas_hsp')} ${formatLength(r.HSP)}`, C.dimColor);
 
     // H_montage (right side, ceiling to fan)
     if (hMontPx > 15) {
-        drawDimensionVertical(ctx, offsetX + roomPxW + 25, offsetY, offsetX + roomPxW + 25, fanY, `${(r.hMontage * 100).toFixed(0)} cm`, failedConstraintIds.has('mounting') ? C.red : C.orange);
+        drawDimensionVertical(ctx, offsetX + roomPxW + 25, offsetY, offsetX + roomPxW + 25, fanY, formatHeight(r.hMontage), failedConstraintIds.has('mounting') ? C.red : C.orange);
     }
 
     // H_pales (right side, fan to floor)
-    drawDimensionVertical(ctx, offsetX + roomPxW + 55, fanY, offsetX + roomPxW + 55, offsetY + roomPxH, `${(r.hPales * 100).toFixed(0)} cm`, failedConstraintIds.has('blade-height') ? C.red : C.accent);
+    drawDimensionVertical(ctx, offsetX + roomPxW + 55, fanY, offsetX + roomPxW + 55, offsetY + roomPxH, formatHeight(r.hPales), failedConstraintIds.has('blade-height') ? C.red : C.accent);
 
     // Diameter (under fan)
     const dLabelY = fanY + 20;
-    drawDimension(ctx, fanCenterX - fanRadius, dLabelY, fanCenterX + fanRadius, dLabelY, `D=${r.dCm} cm`, diameterColor);
+    drawDimension(ctx, fanCenterX - fanRadius, dLabelY, fanCenterX + fanRadius, dLabelY, `D=${formatDiameter(r.dCm)}`, diameterColor);
 
     // ── Labels ──
     ctx.font = '10px Inter, sans-serif';
@@ -1404,7 +1575,7 @@ function drawSectionView(r) {
     if (r.mountingType !== 'Standard' && r.mountingType !== 'Low-profile') mountColor = C.red;
     ctx.fillStyle = mountColor;
     ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.fillText(`Montage ${r.mountingType}`, fanCenterX, fanY - 15);
+    ctx.fillText(`${window.I18n.t('canvas_mounting_prefix')}${window.I18n.t(r.mountingType)}`, fanCenterX, fanY - 15);
 
     // Security line
     const secY = offsetY + roomPxH - r.securityHeight * scale;
@@ -1425,14 +1596,14 @@ function drawSectionView(r) {
     ctx.fillStyle = C.secText;
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Sécurité: ${(r.securityHeight * 100).toFixed(0)} cm`, offsetX + 5, secY - 4);
+    ctx.fillText(`${window.I18n.t('canvas_security')}: ${formatHeight(r.securityHeight)}`, offsetX + 5, secY - 4);
 
     // Floor / Ceiling labels
     ctx.fillStyle = C.labelMuted;
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Plafond', offsetX + roomPxW / 2, offsetY - 8);
-    ctx.fillText('Sol', offsetX + roomPxW / 2, offsetY + roomPxH + 16);
+    ctx.fillText(window.I18n.t('canvas_ceiling'), offsetX + roomPxW / 2, offsetY - 8);
+    ctx.fillText(window.I18n.t('canvas_floor'), offsetX + roomPxW / 2, offsetY + roomPxH + 16);
 
     drawDiagnosticBadges(ctx, issueLabels, offsetX + 8, offsetY + 8);
 }
