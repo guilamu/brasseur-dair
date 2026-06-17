@@ -17,6 +17,11 @@ window.I18n = {
             "theme_toggle_title": "Changer de thème",
             "theme_toggle_label": "Basculer le thème clair / sombre",
 
+            // Disclaimer modal (first-load validation)
+            "disclaimer_title": "Avertissement",
+            "disclaimer_body": "Cette application est un prototype indépendant fondé sur des travaux publics de recherche de l’ADEME. Elle n’a pas encore été validée par les équipes du projet BRASSE et ne doit pas être confondue avec l’outil officiel en cours de développement. Les résultats fournis sont donnés à titre indicatif et doivent être interprétés avec prudence.",
+            "disclaimer_accept": "J'ai compris",
+
             // Input Panel
             "panel_settings": "📐 Paramètres",
             "room_dimensions": "Dimensions de la pièce",
@@ -341,6 +346,11 @@ window.I18n = {
             "header_btn_sizing": "📐 Sizing Tool",
             "theme_toggle_title": "Change theme",
             "theme_toggle_label": "Toggle light / dark theme",
+
+            // Disclaimer modal (first-load validation)
+            "disclaimer_title": "Disclaimer",
+            "disclaimer_body": "This application is an independent prototype based on public ADEME research. It has not yet been validated by the BRASSE project team and should not be confused with the official tool currently under development. The results provided are indicative and should be interpreted with caution.",
+            "disclaimer_accept": "I understand",
 
             // Input Panel
             "panel_settings": "📐 Settings",

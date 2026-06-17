@@ -12,6 +12,16 @@
     <script src="i18n.js"></script>
 </head>
 <body>
+    <!-- Disclaimer modal (first-load validation) -->
+    <div id="disclaimer-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
+        <div class="modal-card">
+            <div class="modal-icon">⚠️</div>
+            <h2 id="disclaimer-title" class="modal-title" data-i18n="disclaimer_title">Avertissement</h2>
+            <p class="modal-text" data-i18n="disclaimer_body">Cette application est un prototype indépendant fondé sur des travaux publics de recherche de l’ADEME. Elle n’a pas encore été validée par les équipes du projet BRASSE et ne doit pas être confondue avec l’outil officiel en cours de développement. Les résultats fournis sont donnés à titre indicatif et doivent être interprétés avec prudence.</p>
+            <button id="disclaimer-accept" class="btn-primary" type="button" data-i18n="disclaimer_accept">J'ai compris</button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header id="app-header">
         <div class="header-content">

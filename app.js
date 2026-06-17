@@ -396,6 +396,7 @@ function findLargestCompatibleMarketDiameter(dMinMeters, dMaxMeters) {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.I18n.init();
+    initDisclaimerModal();
     const form = document.getElementById('calc-form');
     const logoIcon = document.querySelector('.logo-icon');
     const logoImage = logoIcon ? logoIcon.querySelector('img') : null;
@@ -706,6 +707,26 @@ document.addEventListener('DOMContentLoaded', () => {
         setPlaybackRate(1);
         logoIcon.addEventListener('pointerenter', () => animatePlaybackRate(20));
         logoIcon.addEventListener('pointerleave', () => animatePlaybackRate(1));
+    }
+
+    function initDisclaimerModal() {
+        const modal = document.getElementById('disclaimer-modal');
+        const acceptBtn = document.getElementById('disclaimer-accept');
+        if (!modal || !acceptBtn) return;
+
+        if (localStorage.getItem('brasse-disclaimer-accepted') === 'v1') {
+            return;
+        }
+
+        modal.classList.remove('hidden');
+
+        const close = () => {
+            localStorage.setItem('brasse-disclaimer-accepted', 'v1');
+            modal.classList.add('hidden');
+            acceptBtn.removeEventListener('click', close);
+        };
+
+        acceptBtn.addEventListener('click', close);
     }
 
     function initThemeToggle() {
