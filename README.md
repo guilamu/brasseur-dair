@@ -1,3 +1,8 @@
+> [!WARNING]
+> Cette application est un prototype indépendant fondé sur des travaux publics de recherche de l’ADEME.
+> Elle n’a pas encore été validée par les équipes du projet BRASSE et ne doit pas être confondue avec l’outil officiel en cours de développement.
+> Les résultats fournis sont donnés à titre indicatif et doivent être interprétés avec prudence.
+
 # Brasseur d'Air
 
 Application web statique de dimensionnement et de placement de brasseurs d'air plafonniers, basée sur une lecture opérationnelle des publications ADEME du programme BRASSE.
