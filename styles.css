@@ -1172,23 +1172,148 @@ canvas {
 
 /* --- Responsive --- */
 
-
 @media (max-width: 960px) {
     #app-main {
         grid-template-columns: 1fr;
         padding: 1rem;
     }
-    
+
     #input-panel {
         position: static;
     }
-    
+
     .summary-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .header-content {
         padding: 1rem;
+    }
+}
+
+/* --- Tablet : header commence à déborder --- */
+@media (max-width: 768px) {
+    .header-content {
+        flex-wrap: wrap;
+        padding: 0.75rem 1rem;
+        gap: 0.5rem 1rem;
+    }
+
+    /* Logo prend tout l'espace disponible sur la 1re ligne */
+    .logo-area {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .logo-area h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Contrôles passent sur la 2e ligne, alignés à droite */
+    .header-controls {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+/* --- Mobile : réduction agressive --- */
+@media (max-width: 540px) {
+    .header-content {
+        padding: 0.65rem 0.875rem;
+    }
+
+    .logo-area h1 {
+        font-size: 1.1rem;
+    }
+
+    /* Sous-titre trop long sur petit écran */
+    .subtitle {
+        display: none;
+    }
+
+    /* Logo icône légèrement réduit */
+    .logo-icon,
+    .logo-icon img {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* Lien "Pourquoi le brasseur d'air ?" → icône seule */
+    .header-btn {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        font-size: 0;       /* masque le texte nœud */
+        border-radius: 50%;
+    }
+
+    .header-btn span {
+        font-size: 1.1rem;  /* garde l'emoji visible */
+    }
+
+    /* Switchers de langue et unité légèrement compressés */
+    .lang-switcher,
+    .unit-switcher {
+        height: 38px;
+    }
+
+    .lang-btn,
+    .unit-btn {
+        height: 32px;
+        padding: 0 0.55rem;
+        font-size: 0.72rem;
+    }
+
+    /* Bouton thème */
+    .theme-toggle {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* Contrôles centrés sur très petits écrans */
+    .header-controls {
+        justify-content: center;
+    }
+}
+
+/* --- Très petits écrans (≤ 400 px) --- */
+@media (max-width: 400px) {
+    .logo-icon,
+    .logo-icon img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .logo-area {
+        gap: 0.6rem;
+    }
+
+    .logo-area h1 {
+        font-size: 1rem;
+    }
+
+    .lang-switcher,
+    .unit-switcher {
+        height: 34px;
+    }
+
+    .lang-btn,
+    .unit-btn {
+        height: 28px;
+        padding: 0 0.45rem;
+        font-size: 0.68rem;
+    }
+
+    .theme-toggle,
+    .header-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .header-controls {
+        gap: 0.35rem;
     }
 }
 
@@ -1202,11 +1327,11 @@ canvas {
         gap: 0.5rem;
         padding: 1rem;
     }
-    
+
     .viz-container {
         padding: 1rem;
     }
-    
+
     .metrics-grid {
         grid-template-columns: 1fr;
     }

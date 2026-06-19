@@ -119,6 +119,13 @@ Cette licence est cohérente avec un projet open source destiné à être diffus
 
 ## Historique
 
+### [0.9.4] - 2026-06-19
+
+- Refonte complète de la responsivité du header pour les écrans mobiles.
+- À partir de 768 px : le header se découpe en deux lignes (logo en première ligne, contrôles en seconde ligne).
+- En dessous de 540 px : le sous-titre est masqué, le lien « Pourquoi le brasseur d'air ? » se réduit à son icône seule, les switchers de langue et d'unités sont compressés.
+- En dessous de 400 px : réduction supplémentaire des icônes et boutons pour tenir sur les très petits écrans sans débordement.
+
 ### [0.9.3] - 2026-06-12
 
 - Ajout de la localisation et du support bilingue complet (Français / Anglais) avec bascule en temps réel dans le header.
