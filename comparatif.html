@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatif brasseurs d'air — Projet BRASSE II (2025)</title>
+    <meta name="description" content="Tableau comparatif des 48 brasseurs d'air plafonniers testés dans le cadre du projet BRASSE II. Filtrez par marque, diamètre, bruit et performances.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="i18n.js"></script>
+
+    <style>
+        /* ===== Comparatif-specific styles ===== */
+        .comparatif-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero / Intro */
+        .comparatif-hero {
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comparatif-hero::after {
+            content: "🔍";
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            font-size: 10rem;
+            opacity: 0.04;
+            transform: rotate(15deg);
+        }
+
+        .comparatif-hero h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .comparatif-hero p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            max-width: 950px;
+            line-height: 1.7;
+        }
+
+        .comparatif-hero em {
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        /* Filters */
+        .filters-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filters-panel h3 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem 1.25rem;
+            align-items: end;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 0.85rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 250ms ease, box-shadow 250ms ease;
+        }
+
+        .filter-item select:focus,
+        .filter-item input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(74, 232, 160, 0.08);
+        }
+
+        .filter-item select {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239398a8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            padding-right: 2rem;
+        }
+
+        .filter-item select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .filter-item input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .range-pair {
+            display: flex;
+            gap: 6px;
+        }
+
+        .range-pair input {
+            width: 50%;
+        }
+
+        #btnReset {
+            height: 38px;
+            padding: 0 1.25rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+        }
+
+        #btnReset:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        [data-theme="light"] #btnReset {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        [data-theme="light"] #btnReset:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 1.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            align-items: center;
+        }
+
+        .stats-bar .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 0.2rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            min-width: 28px;
+            border: 1px solid rgba(74, 232, 160, 0.2);
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.82rem;
+            min-width: 1500px;
+        }
+
+        thead th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 0.75rem 0.6rem;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border-bottom: 2px solid var(--border);
+            transition: background 150ms ease, color 150ms ease;
+        }
+
+        thead th:hover {
+            background: var(--bg-card-hover);
+            color: var(--accent);
+        }
+
+        thead th .sort-arrow {
+            font-size: 0.7em;
+            opacity: 0.5;
+        }
+
+        thead th.sorted-asc .sort-arrow::after {
+            content: " ▲";
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        thead th.sorted-desc .sort-arrow::after {
+            content: " ▼";
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        tbody td {
+            padding: 0.6rem 0.6rem;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            transition: background 150ms ease, color 150ms ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        [data-theme="light"] tbody tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        tbody tr:hover td {
+            background: rgba(74, 232, 160, 0.04);
+            color: var(--text-primary);
+        }
+
+        [data-theme="light"] tbody tr:hover td {
+            background: rgba(34, 181, 115, 0.06);
+        }
+
+        tbody tr.detail-row td {
+            background: var(--bg-tertiary);
+            padding: 1rem 1.5rem;
+            text-align: left;
+        }
+
+        /* Speed detail table */
+        .speed-table {
+            width: auto;
+            font-size: 0.85em;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            min-width: auto;
+        }
+
+        .speed-table th,
+        .speed-table td {
+            padding: 0.4rem 1rem;
+            text-align: center;
+            border: none;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .speed-table th {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            position: static;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .speed-table td {
+            color: var(--text-secondary);
+        }
+
+        /* Data styling */
+        .id-cell {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.82em;
+            color: var(--text-muted);
+        }
+
+        .toggle-detail {
+            cursor: pointer;
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 0.82em;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: var(--radius-sm);
+            transition: background 150ms ease, color 150ms ease;
+        }
+
+        .toggle-detail:hover {
+            background: var(--blue-dim);
+            color: var(--text-primary);
+        }
+
+        .num {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .na {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .db-low {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .db-mid {
+            color: var(--orange);
+            font-weight: 600;
+        }
+
+        .db-high {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        /* Footer note */
+        .footer-note {
+            margin-top: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .footer-note strong {
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .comparatif-container {
+                padding: 1rem;
+            }
+
+            .comparatif-hero {
+                padding: 1.5rem;
+            }
+
+            .comparatif-hero h2 {
+                font-size: 1.3rem;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header id="app-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <img src="fan.svg" alt="Brasseur d'air" width="48" height="48">
+                </div>
+                <div>
+                    <h1 data-i18n="app_title">Brasseur d'Air</h1>
+                    <a href="#app-footer" class="subtitle subtitle-link" data-i18n="header_subtitle">Outil de dimensionnement &amp; placement optimal, basé sur les publications ADEME du programme BRASSE.</a>
+                </div>
+            </div>
+            <div class="header-controls">
+                <a href="index.html" class="header-btn" data-i18n-title="header_btn_sizing" data-i18n="header_btn_sizing">
+                    <span>📐</span> Outil Calepinage
+                </a>
+                <a href="givoni.html" class="header-btn" data-i18n-title="header_btn_why" data-i18n="header_btn_why">
+                    <span>📊</span> Pourquoi le brasseur d'air ?
+                </a>
+                <button id="theme-toggle" class="theme-toggle" type="button" data-i18n-aria="theme_toggle_label" data-i18n-title="theme_toggle_title">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="fr">FR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="comparatif-container">
+
+        <!-- Hero Introduction -->
+        <section class="comparatif-hero">
+            <h2 data-i18n="comparatif_hero_title">Caractéristiques des brasseurs d'air — Projet BRASSE II</h2>
+            <p data-i18n="comparatif_hero_desc">
+                Données extraites des annexes (pages 59-72) du rapport
+                <em>« Brasseurs d'air : une solution de sobriété et d'efficacité — Caractérisation du marché et évaluation des performances »</em>, Juin 2025.
+                &mdash; 48 configurations testées (section 9.1 aéraulique + section 9.2 acoustique).
+            </p>
+        </section>
+
+        <!-- Filters -->
+        <div id="filters" class="filters-panel">
+            <h3 data-i18n="comparatif_filters"><span>🔎</span> Filtres</h3>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_id">ID (recherche)</label>
+                    <input type="text" id="f_id" placeholder="ex: 0201ACR132">
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_brand">Marque</label>
+                    <select id="f_marque">
+                        <option value="" data-i18n="comparatif_all_marques">Toutes</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_model">Modèle (recherche)</label>
+                    <input type="text" id="f_modele" placeholder="ex: Haiku, Louisville…">
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_blades">Nombre de pales</label>
+                    <select id="f_pales">
+                        <option value="" data-i18n="comparatif_all">Tous</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_diam">Diamètre (cm) min / max</label>
+                    <div class="range-pair">
+                        <input type="number" id="f_diam_min" placeholder="min" min="0">
+                        <input type="number" id="f_diam_max" placeholder="max" min="0">
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_dist">Distance plafond (m) min / max</label>
+                    <div class="range-pair">
+                        <input type="number" id="f_dist_min" placeholder="min" step="0.01" min="0">
+                        <input type="number" id="f_dist_max" placeholder="max" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_speeds">Nombre de vitesses</label>
+                    <select id="f_vitesses">
+                        <option value="" data-i18n="comparatif_all">Tous</option>
+                        <option value="1">1</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_db">Bruit max dB(A) ≤</label>
+                    <input type="number" id="f_dbmax" placeholder="ex: 45" step="0.1">
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_rpm">RPM max ≤</label>
+                    <input type="number" id="f_rpmmax" placeholder="ex: 200" step="0.1">
+                </div>
+                <div class="filter-item">
+                    <label data-i18n="comparatif_label_power">Puissance max (W) ≤</label>
+                    <input type="number" id="f_pmax" placeholder="ex: 30" step="0.1">
+                </div>
+                <div class="filter-item" style="display:flex; align-items:end;">
+                    <button id="btnReset" onclick="resetFilters()" data-i18n="comparatif_reset">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div id="stats" class="stats-bar">
+            <span><span id="stat_count" class="badge">0</span> <span data-i18n="comparatif_stats_displayed">configuration(s) affichée(s)</span></span>
+            <span><span data-i18n="comparatif_stats_out_of">sur</span> <span id="stat_total" class="badge">0</span> <span data-i18n="comparatif_stats_total">au total</span></span>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-wrap">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th data-col="num" data-type="num">#</th>
+                        <th data-col="id" data-type="str" data-i18n="comparatif_th_id">ID<span class="sort-arrow"></span></th>
+                        <th data-col="marque" data-type="str" data-i18n="comparatif_th_brand">Marque<span class="sort-arrow"></span></th>
+                        <th data-col="modele" data-type="str" data-i18n="comparatif_th_model">Modèle<span class="sort-arrow"></span></th>
+                        <th data-col="pales" data-type="num" data-i18n="comparatif_th_blades">Pales<span class="sort-arrow"></span></th>
+                        <th data-col="diam" data-type="num" data-i18n="comparatif_th_diam">Diamètre (cm)<span class="sort-arrow"></span></th>
+                        <th data-col="dist" data-type="num" data-i18n="comparatif_th_dist">Dist. plafond (m)<span class="sort-arrow"></span></th>
+                        <th data-col="nbVit" data-type="num" data-i18n="comparatif_th_speeds">Nb vitesses<span class="sort-arrow"></span></th>
+                        <th data-col="rpmMin" data-type="num" data-i18n="comparatif_th_rpm_min">RPM min<span class="sort-arrow"></span></th>
+                        <th data-col="rpmMax" data-type="num" data-i18n="comparatif_th_rpm_max">RPM max<span class="sort-arrow"></span></th>
+                        <th data-col="dbMin" data-type="num" data-i18n="comparatif_th_db_min">dB(A) min<span class="sort-arrow"></span></th>
+                        <th data-col="dbMax" data-type="num" data-i18n="comparatif_th_db_max">dB(A) max<span class="sort-arrow"></span></th>
+                        <th data-col="P_min" data-type="num" data-i18n="comparatif_th_p_min">P min (W)<span class="sort-arrow"></span></th>
+                        <th data-col="P_max" data-type="num" data-i18n="comparatif_th_p_max">P max (W)<span class="sort-arrow"></span></th>
+                        <th data-col="vmoy_min" data-type="num" data-i18n="comparatif_th_v_min">V. moy. min (m/s)<span class="sort-arrow"></span></th>
+                        <th data-col="vmoy_max" data-type="num" data-i18n="comparatif_th_v_max">V. moy. max (m/s)<span class="sort-arrow"></span></th>
+                        <th data-col="ce_min" data-type="num" data-i18n="comparatif_th_ce_min">CE min (°C)<span class="sort-arrow"></span></th>
+                        <th data-col="ce_max" data-type="num" data-i18n="comparatif_th_ce_max">CE max (°C)<span class="sort-arrow"></span></th>
+                        <th data-i18n="comparatif_th_details">Détails</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Footer note -->
+        <div class="footer-note" data-i18n="comparatif_footer_note">
+            <strong>Source :</strong> Sections 9.1 (Tableaux 4 &amp; 5 : performances aérauliques) et 9.2 (niveau de puissance acoustique) du rapport BRASSE II.<br>
+            &bull; <strong>Section 9.2</strong> (acoustique) : diamètre, nombre de pales, distance plafond, et pour chaque vitesse V1…Vn : RPM et niveau de puissance dB(A). Les colonnes RPM min/max, dB(A) min/max et nb vitesses en découlent.<br>
+            &bull; <strong>Section 9.1</strong> (aéraulique) : puissance électrique min/max (W), vitesse moyenne min/max (m/s), cooling effect (CE) min/max (°C).<br>
+            &bull; 46 configurations sont présentes dans les deux sections ; <em>Wixled Taliou</em> n'a que les données aérauliques et <em>RSOnline</em> n'a que les données acoustiques.<br>
+            &bull; Code couleur bruit : <span class="db-low">vert ≤ 30 dB(A)</span> &middot; <span class="db-mid">orange 30-45 dB(A)</span> &middot; <span class="db-high">rouge &gt; 45 dB(A)</span>.<br>
+            &bull; Cliquez sur un en-tête pour trier ; cliquez sur « Détails » pour voir toutes les vitesses (RPM / dB(A)).
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="app-footer">
+        <p class="footer-intro" data-i18n="footer_intro">Cette application indépendante s'appuie sur les publications ADEME du programme BRASSE.</p>
+        <ul class="footer-sources">
+            <li>
+                <a href="https://librairie.ademe.fr/energies/6791-brasse.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse1">BRASSE, Brasseurs d'air, une solution de sobriété et d'efficacité</a>
+                <span data-i18n="footer_sources_brasse1_credits">Crédits : Envirobat BDM, Surya Consultants, ISEA Projects, ADEME.</span>
+            </li>
+            <li>
+                <a href="https://librairie.ademe.fr/batiment/9035-brasse-ii-base-de-donnees-des-performances-de-50-brasseurs-d-air-plafonniers-a-pales.html" target="_blank" rel="noopener noreferrer" data-i18n="footer_sources_brasse2">BRASSE II : Base de données des performances de 50 brasseurs d'air plafonniers à pales</a>
+                <span data-i18n="footer_sources_brasse2_credits">Crédits : Surya Consultants, LASA.</span>
+            </li>
+        </ul>
+        <p data-i18n="footer_rules_interpretation">Les règles de calepinage, indicateurs de performance et données marché affichés ici sont une interprétation de ces travaux publics.</p>
+        <div class="footer-project-links">
+            <span class="footer-version" data-i18n="footer_version">Version 0.9.5</span>
+            <a class="footer-github-link" href="https://github.com/guilamu/brasseur-dair" target="_blank" rel="noopener noreferrer" aria-label="Accéder au code source sur GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.15-3.2.7-3.88-1.36-3.88-1.36-.53-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.03 1.76 2.69 1.25 3.35.95.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.72 0-1.27.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.19 1.19a11.1 11.1 0 0 1 5.81 0c2.22-1.5 3.19-1.19 3.19-1.19.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.11 0 4.45-2.71 5.42-5.29 5.71.42.36.79 1.06.79 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>
+                </svg>
+                <span data-i18n="footer_code_source">Code source</span>
+            </a>
+        </div>
+        <p class="disclaimer" data-i18n="footer_disclaimer">Cet outil est fourni à titre indicatif. Consultez un professionnel pour toute installation.</p>
+    </footer>
+
+    <script>
+    const fans = [{"id": "0101ACR132", "marque": "GoodHome", "modele": "Linto", "P_min": 14.0, "P_max": 55.0, "vmoy_min": 0.33, "vmoy_max": 0.73, "ce_min": 1.79, "ce_max": 3.09, "diam": 132.0, "pales": 3, "dist": 0.3, "speeds": [{"v": "V1", "rpm": 95.0, "db": 26.5}, {"v": "V2", "rpm": 123.3, "db": 35.2}, {"v": "V3", "rpm": 198.7, "db": 51.3}], "rpmMin": 95.0, "rpmMax": 198.7, "dbMin": 26.5, "dbMax": 51.3, "nbVit": 3}, {"id": "0201ACR132", "marque": "Hunter", "modele": "Industrie II", "P_min": 15.0, "P_max": 65.0, "vmoy_min": 0.35, "vmoy_max": 0.8, "ce_min": 1.89, "ce_max": 3.21, "diam": 132.0, "pales": 3, "dist": 0.34, "speeds": [{"v": "V1", "rpm": 71.0, "db": 22.4}, {"v": "V2", "rpm": 121.0, "db": 35.4}, {"v": "V3", "rpm": 158.0, "db": 44.1}], "rpmMin": 71.0, "rpmMax": 158.0, "dbMin": 22.4, "dbMax": 44.1, "nbVit": 3}, {"id": "0202ACR112", "marque": "Hunter", "modele": "Low Profile III", "P_min": 15.0, "P_max": 62.0, "vmoy_min": 0.33, "vmoy_max": 0.62, "ce_min": 1.76, "ce_max": 2.83, "diam": 112.0, "pales": 5, "dist": 0.22, "speeds": [{"v": "V1", "rpm": 135.4, "db": 34.2}, {"v": "V2", "rpm": 210.3, "db": 47.7}, {"v": "V3", "rpm": 241.0, "db": 52.6}], "rpmMin": 135.4, "rpmMax": 241.0, "dbMin": 34.2, "dbMax": 52.6, "nbVit": 3}, {"id": "0203ACR132", "marque": "Hunter", "modele": "Low Profile III", "P_min": 14.0, "P_max": 66.0, "vmoy_min": 0.41, "vmoy_max": 0.59, "ce_min": 2.14, "ce_max": 2.77, "diam": 132.0, "pales": 3, "dist": 0.21, "speeds": [{"v": "V1", "rpm": 93.8, "db": 27.2}, {"v": "V2", "rpm": 151.2, "db": 42.4}, {"v": "V3", "rpm": 185.4, "db": 49.9}], "rpmMin": 93.8, "rpmMax": 185.4, "dbMin": 27.2, "dbMax": 49.9, "nbVit": 3}, {"id": "0204ACF132", "marque": "Hunter", "modele": "Industrie II", "P_min": 16.0, "P_max": 69.0, "vmoy_min": 0.2, "vmoy_max": 0.43, "ce_min": 0.82, "ce_max": 2.23, "diam": 132.0, "pales": 3, "dist": 0.19, "speeds": [{"v": "V1", "rpm": 76.1, "db": 27.2}, {"v": "V2", "rpm": 122.9, "db": 39.0}, {"v": "V3", "rpm": 161.3, "db": 45.7}], "rpmMin": 76.1, "rpmMax": 161.3, "dbMin": 27.2, "dbMax": 45.7, "nbVit": 3}, {"id": "0301ACR132", "marque": "Create", "modele": "Wind Wood", "P_min": 29.0, "P_max": 68.0, "vmoy_min": 0.55, "vmoy_max": 0.83, "ce_min": 2.64, "ce_max": 3.28, "diam": 132.0, "pales": 3, "dist": 0.35, "speeds": [{"v": "V1", "rpm": 113.0, "db": 34.5}, {"v": "V2", "rpm": 149.0, "db": 39.9}, {"v": "V3", "rpm": 168.0, "db": 43.8}], "rpmMin": 113.0, "rpmMax": 168.0, "dbMin": 34.5, "dbMax": 43.8, "nbVit": 3}, {"id": "0302DCR152", "marque": "Create", "modele": "Wind Large", "P_min": 5.0, "P_max": 37.0, "vmoy_min": 0.54, "vmoy_max": 1.14, "ce_min": 2.61, "ce_max": 3.7, "diam": 152.0, "pales": 3, "dist": 0.47, "speeds": [{"v": "V1", "rpm": 80.0, "db": 23.3}, {"v": "V2", "rpm": 101.0, "db": 28.4}, {"v": "V3", "rpm": 121.0, "db": 34.0}, {"v": "V4", "rpm": 137.0, "db": 39.1}, {"v": "V5", "rpm": 152.0, "db": 42.2}, {"v": "V6", "rpm": 168.0, "db": 45.9}], "rpmMin": 80.0, "rpmMax": 168.0, "dbMin": 23.3, "dbMax": 45.9, "nbVit": 6}, {"id": "0303DCR132", "marque": "Create", "modele": "Wind Stylance", "P_min": 3.0, "P_max": 34.0, "vmoy_min": 0.39, "vmoy_max": 0.97, "ce_min": 2.06, "ce_max": 3.48, "diam": 132.0, "pales": 3, "dist": 0.47, "speeds": [{"v": "V1", "rpm": 83.0, "db": 23.4}, {"v": "V2", "rpm": 96.0, "db": 25.0}, {"v": "V3", "rpm": 109.3, "db": 32.6}, {"v": "V4", "rpm": 159.0, "db": 37.5}, {"v": "V5", "rpm": 179.2, "db": 40.7}, {"v": "V6", "rpm": 199.3, "db": 45.1}], "rpmMin": 83.0, "rpmMax": 199.3, "dbMin": 23.4, "dbMax": 45.1, "nbVit": 6}, {"id": "0304DCF132", "marque": "Create", "modele": "Wind Calm", "P_min": 4.0, "P_max": 13.0, "vmoy_min": 0.32, "vmoy_max": 0.64, "ce_min": 1.73, "ce_max": 2.89, "diam": 132.0, "pales": 3, "dist": 0.24, "speeds": [{"v": "V1", "rpm": 74.0, "db": 22.0}, {"v": "V2", "rpm": 83.0, "db": 22.5}, {"v": "V3", "rpm": 93.0, "db": 23.3}, {"v": "V4", "rpm": 108.0, "db": 27.1}, {"v": "V5", "rpm": 123.0, "db": 29.8}, {"v": "V6", "rpm": 138.0, "db": 33.4}], "rpmMin": 74.0, "rpmMax": 138.0, "dbMin": 22.0, "dbMax": 33.4, "nbVit": 6}, {"id": "0305DCR132", "marque": "Create", "modele": "Wind Stylance", "P_min": 3.0, "P_max": 28.0, "vmoy_min": 0.39, "vmoy_max": 0.98, "ce_min": 2.11, "ce_max": 3.51, "diam": 132.0, "pales": 3, "dist": 0.45, "speeds": [{"v": "V1", "rpm": 82.9, "db": 23.5}, {"v": "V2", "rpm": 110.0, "db": 24.5}, {"v": "V3", "rpm": 140.2, "db": 31.0}, {"v": "V4", "rpm": 160.3, "db": 35.9}, {"v": "V5", "rpm": 180.3, "db": 39.8}, {"v": "V6", "rpm": 200.2, "db": 43.4}], "rpmMin": 82.9, "rpmMax": 200.2, "dbMin": 23.5, "dbMax": 43.4, "nbVit": 6}, {"id": "0401DCR162", "marque": "Turbobrise", "modele": "ERP160", "P_min": 5.0, "P_max": 37.0, "vmoy_min": 0.49, "vmoy_max": 1.1, "ce_min": 2.45, "ce_max": 3.66, "diam": 162.0, "pales": 3, "dist": 0.31, "speeds": [{"v": "V1", "rpm": 72.0, "db": 25.8}, {"v": "V2", "rpm": 93.0, "db": 32.2}, {"v": "V3", "rpm": 112.0, "db": 39.2}, {"v": "V4", "rpm": 132.0, "db": 44.2}, {"v": "V5", "rpm": 144.0, "db": 46.9}, {"v": "V6", "rpm": 163.0, "db": 50.9}], "rpmMin": 72.0, "rpmMax": 163.0, "dbMin": 25.8, "dbMax": 50.9, "nbVit": 6}, {"id": "0501DCR132", "marque": "Big Ass Fans", "modele": "Haiku L", "P_min": 3.0, "P_max": 22.0, "vmoy_min": 0.17, "vmoy_max": 1.01, "ce_min": 0.41, "ce_max": 3.55, "diam": 132.0, "pales": 3, "dist": 0.3, "speeds": [{"v": "V1", "rpm": 35.0, "db": 21.0}, {"v": "V2", "rpm": 63.0, "db": 21.4}, {"v": "V3", "rpm": 91.0, "db": 24.0}, {"v": "V4", "rpm": 119.0, "db": 33.0}, {"v": "V5", "rpm": 147.0, "db": 40.0}, {"v": "V6", "rpm": 175.0, "db": 46.7}, {"v": "V7", "rpm": 204.0, "db": 51.3}], "rpmMin": 35.0, "rpmMax": 204.0, "dbMin": 21.0, "dbMax": 51.3, "nbVit": 7}, {"id": "0701DCR086", "marque": "Inspire", "modele": "Palmela S", "P_min": 1.0, "P_max": 16.0, "vmoy_min": 0.14, "vmoy_max": 0.85, "ce_min": 0.1, "ce_max": 3.31, "diam": 86.0, "pales": 3, "dist": 0.29, "speeds": [{"v": "V1", "rpm": 77.0, "db": 20.0}, {"v": "V2", "rpm": 158.2, "db": 22.2}, {"v": "V3", "rpm": 242.6, "db": 34.4}, {"v": "V4", "rpm": 324.9, "db": 43.0}, {"v": "V5", "rpm": 410.0, "db": 50.2}], "rpmMin": 77.0, "rpmMax": 410.0, "dbMin": 20.0, "dbMax": 50.2, "nbVit": 5}, {"id": "0702DCR091", "marque": "Inspire", "modele": "Siroco Plus", "P_min": 2.0, "P_max": 33.0, "vmoy_min": 0.24, "vmoy_max": 0.78, "ce_min": 1.22, "ce_max": 3.18, "diam": 91.0, "pales": 4, "dist": 0.3, "speeds": [{"v": "V1", "rpm": 73.6, "db": 23.4}, {"v": "V2", "rpm": 99.3, "db": 22.1}, {"v": "V3", "rpm": 129.3, "db": 28.2}, {"v": "V4", "rpm": 158.8, "db": 34.5}, {"v": "V5", "rpm": 186.8, "db": 39.9}, {"v": "V6", "rpm": 214.2, "db": 44.7}], "rpmMin": 73.6, "rpmMax": 214.2, "dbMin": 22.1, "dbMax": 44.7, "nbVit": 6}, {"id": "0703DCR107", "marque": "Inspire", "modele": "Beach M", "P_min": 2.0, "P_max": 43.0, "vmoy_min": 0.41, "vmoy_max": 0.9, "ce_min": 2.17, "ce_max": 3.4, "diam": 107.0, "pales": 3, "dist": 0.4, "speeds": [{"v": "V1", "rpm": 74.8, "db": 24.3}, {"v": "V2", "rpm": 114.3, "db": 27.2}, {"v": "V3", "rpm": 136.8, "db": 31.5}, {"v": "V4", "rpm": 155.7, "db": 37.0}, {"v": "V5", "rpm": 176.5, "db": 40.4}, {"v": "V6", "rpm": 211.5, "db": 44.5}], "rpmMin": 74.8, "rpmMax": 211.5, "dbMin": 24.3, "dbMax": 44.5, "nbVit": 6}, {"id": "0704DCR071", "marque": "Inspire", "modele": "Beach S", "P_min": 2.0, "P_max": 24.0, "vmoy_min": 0.32, "vmoy_max": 0.77, "ce_min": 1.7, "ce_max": 3.17, "diam": 71.0, "pales": 3, "dist": 0.26, "speeds": [{"v": "V1", "rpm": 117.8, "db": 20.5}, {"v": "V2", "rpm": 159.0, "db": 26.5}, {"v": "V3", "rpm": 195.8, "db": 33.2}, {"v": "V4", "rpm": 240.4, "db": 33.4}, {"v": "V5", "rpm": 264.4, "db": 40.2}, {"v": "V6", "rpm": 287.9, "db": 44.2}], "rpmMin": 117.8, "rpmMax": 287.9, "dbMin": 20.5, "dbMax": 44.2, "nbVit": 6}, {"id": "0705DCR086", "marque": "Inspire", "modele": "Palmela S", "P_min": 1.0, "P_max": 15.0, "vmoy_min": 0.14, "vmoy_max": 0.85, "ce_min": 0.13, "ce_max": 3.3, "diam": 86.0, "pales": 3, "dist": 0.46, "speeds": [{"v": "V1", "rpm": 77.9, "db": 20.5}, {"v": "V2", "rpm": 159.0, "db": 22.7}, {"v": "V3", "rpm": 244.1, "db": 35.6}, {"v": "V4", "rpm": 324.6, "db": 44.4}, {"v": "V5", "rpm": 400.9, "db": 51.5}], "rpmMin": 77.9, "rpmMax": 400.9, "dbMin": 20.5, "dbMax": 51.5, "nbVit": 5}, {"id": "0801DCR132", "marque": "brasseurs-air-re2020", "modele": "IZYFAN", "P_min": 6.0, "P_max": 46.0, "vmoy_min": 0.62, "vmoy_max": 1.33, "ce_min": 2.85, "ce_max": 3.91, "diam": 132.0, "pales": 3, "dist": 0.31, "speeds": [{"v": "V1", "rpm": 103.1, "db": 26.8}, {"v": "V2", "rpm": 145.0, "db": 38.9}, {"v": "V3", "rpm": 172.9, "db": 44.8}, {"v": "V4", "rpm": 192.6, "db": 48.8}, {"v": "V5", "rpm": 208.7, "db": 51.4}, {"v": "V6", "rpm": 224.2, "db": 53.8}], "rpmMin": 103.1, "rpmMax": 224.2, "dbMin": 26.8, "dbMax": 53.8, "nbVit": 6}, {"id": "0802DCF132", "marque": "brasseurs-air-re2020", "modele": "Samarat", "P_min": 6.0, "P_max": 42.0, "vmoy_min": 0.28, "vmoy_max": 0.52, "ce_min": 1.45, "ce_max": 2.58, "diam": 132.0, "pales": 3, "dist": 0.15, "speeds": [{"v": "V1", "rpm": 102.4, "db": 25.3}, {"v": "V2", "rpm": 122.9, "db": 33.0}, {"v": "V3", "rpm": 143.0, "db": 38.6}, {"v": "V4", "rpm": 163.2, "db": 43.2}, {"v": "V5", "rpm": 183.5, "db": 46.6}, {"v": "V6", "rpm": 203.5, "db": 50.1}], "rpmMin": 102.4, "rpmMax": 203.5, "dbMin": 25.3, "dbMax": 50.1, "nbVit": 6}, {"id": "0803DCF132", "marque": "brasseurs-air-re2020", "modele": "Samarat", "P_min": 6.0, "P_max": 44.0, "vmoy_min": 0.63, "vmoy_max": 1.21, "ce_min": 2.88, "ce_max": 3.79, "diam": 132.0, "pales": 3, "dist": 0.43, "speeds": [{"v": "V1", "rpm": 103.4, "db": 28.7}, {"v": "V2", "rpm": 124.0, "db": 33.7}, {"v": "V3", "rpm": 144.1, "db": 38.5}, {"v": "V4", "rpm": 164.8, "db": 42.9}, {"v": "V5", "rpm": 184.7, "db": 46.7}, {"v": "V6", "rpm": 200.1, "db": 50.0}], "rpmMin": 103.4, "rpmMax": 200.1, "dbMin": 28.7, "dbMax": 50.0, "nbVit": 6}, {"id": "0901DCR135", "marque": "S&P", "modele": "HTD135DCOAK", "P_min": 5.0, "P_max": 28.0, "vmoy_min": 0.39, "vmoy_max": 0.89, "ce_min": 2.11, "ce_max": 3.38, "diam": 135.0, "pales": 3, "dist": 0.33, "speeds": [{"v": "V1", "rpm": 79.0, "db": 23.5}, {"v": "V2", "rpm": 96.0, "db": 26.3}, {"v": "V3", "rpm": 129.0, "db": 37.3}, {"v": "V4", "rpm": 146.0, "db": 37.4}, {"v": "V5", "rpm": 168.0, "db": 41.6}, {"v": "V6", "rpm": 187.0, "db": 47.0}], "rpmMin": 79.0, "rpmMax": 187.0, "dbMin": 23.5, "dbMax": 47.0, "nbVit": 6}, {"id": "0902ACR100", "marque": "S&P", "modele": "HTB90RC", "P_min": 61.0, "P_max": 61.0, "vmoy_min": 0.52, "vmoy_max": 0.94, "ce_min": 2.56, "ce_max": 3.46, "diam": 100.0, "pales": 3, "dist": 0.36, "speeds": [{"v": "V1", "rpm": 132.0, "db": 32.1}, {"v": "V2", "rpm": 203.0, "db": 45.5}, {"v": "V3", "rpm": 250.0, "db": 50.7}], "rpmMin": 132.0, "rpmMax": 250.0, "dbMin": 32.1, "dbMax": 50.7, "nbVit": 3}, {"id": "0903ACR140", "marque": "S&P", "modele": "HTB140RC", "P_min": 19.0, "P_max": 54.0, "vmoy_min": 0.65, "vmoy_max": 0.95, "ce_min": 2.91, "ce_max": 3.47, "diam": 140.0, "pales": 3, "dist": 0.36, "speeds": [{"v": "V1", "rpm": 182.0, "db": 50.4}, {"v": "V2", "rpm": 238.0, "db": 56.9}, {"v": "V3", "rpm": 267.0, "db": 59.4}], "rpmMin": 182.0, "rpmMax": 267.0, "dbMin": 50.4, "dbMax": 59.4, "nbVit": 3}, {"id": "1001ACR105", "marque": "Westinghouse", "modele": "Princess euro", "P_min": 27.0, "P_max": 45.0, "vmoy_min": 0.36, "vmoy_max": 0.63, "ce_min": 1.94, "ce_max": 2.85, "diam": 105.0, "pales": 4, "dist": 0.28, "speeds": [{"v": "V1", "rpm": 125.0, "db": 28.8}, {"v": "V2", "rpm": 171.0, "db": 37.2}, {"v": "V3", "rpm": 222.0, "db": 46.4}], "rpmMin": 125.0, "rpmMax": 222.0, "dbMin": 28.8, "dbMax": 46.4, "nbVit": 3}, {"id": "1002ACR142", "marque": "Westinghouse", "modele": "Industrial", "P_min": 9.0, "P_max": 61.0, "vmoy_min": 0.39, "vmoy_max": 1.03, "ce_min": 2.09, "ce_max": 3.57, "diam": 142.0, "pales": 3, "dist": 0.45, "speeds": [{"v": "V1", "rpm": 100.0, "db": 28.3}, {"v": "V2", "rpm": 155.0, "db": 43.2}, {"v": "V3", "rpm": 205.0, "db": 51.6}, {"v": "V4", "rpm": 262.0, "db": 58.7}], "rpmMin": 100.0, "rpmMax": 262.0, "dbMin": 28.3, "dbMax": 58.7, "nbVit": 4}, {"id": "1003ACR076", "marque": "Westinghouse", "modele": "Turbo Swirl", "P_min": 39.0, "P_max": 50.0, "vmoy_min": 0.41, "vmoy_max": 0.76, "ce_min": 2.15, "ce_max": 3.14, "diam": 76.0, "pales": 6, "dist": 0.24, "speeds": [{"v": "V1", "rpm": 152.0, "db": 39.1}, {"v": "V2", "rpm": 206.0, "db": 42.8}, {"v": "V3", "rpm": 270.0, "db": 49.6}], "rpmMin": 152.0, "rpmMax": 270.0, "dbMin": 39.1, "dbMax": 49.6, "nbVit": 3}, {"id": "1004ACR132", "marque": "Westinghouse", "modele": "Bendan", "P_min": 13.0, "P_max": 60.0, "vmoy_min": 0.27, "vmoy_max": 0.67, "ce_min": 1.45, "ce_max": 2.96, "diam": 132.0, "pales": 5, "dist": 0.24, "speeds": [{"v": "V1", "rpm": 77.0, "db": 23.1}, {"v": "V2", "rpm": 129.0, "db": 36.9}, {"v": "V3", "rpm": 182.0, "db": 49.3}], "rpmMin": 77.0, "rpmMax": 182.0, "dbMin": 23.1, "dbMax": 49.3, "nbVit": 3}, {"id": "1101DCR128", "marque": "Faro", "modele": "Just fan", "P_min": 4.0, "P_max": 29.0, "vmoy_min": 0.22, "vmoy_max": 0.73, "ce_min": 0.97, "ce_max": 3.09, "diam": 128.0, "pales": 3, "dist": 0.28, "speeds": [{"v": "V1", "rpm": 54.0, "db": 20.6}, {"v": "V2", "rpm": 80.0, "db": 21.0}, {"v": "V3", "rpm": 106.0, "db": 25.4}, {"v": "V4", "rpm": 132.0, "db": 27.0}, {"v": "V5", "rpm": 158.0, "db": 33.1}, {"v": "V6", "rpm": 184.0, "db": 38.6}], "rpmMin": 54.0, "rpmMax": 184.0, "dbMin": 20.6, "dbMax": 38.6, "nbVit": 6}, {"id": "1101DCR128B", "marque": "Faro", "modele": "Just fan", "P_min": 4.0, "P_max": 30.0, "vmoy_min": 0.24, "vmoy_max": 0.85, "ce_min": 1.18, "ce_max": 3.31, "diam": 128.0, "pales": 3, "dist": 0.38, "speeds": [{"v": "V1", "rpm": 52.7, "db": 20.9}, {"v": "V2", "rpm": 77.8, "db": 21.3}, {"v": "V3", "rpm": 103.1, "db": 24.6}, {"v": "V4", "rpm": 128.5, "db": 31.7}, {"v": "V5", "rpm": 153.5, "db": 37.8}, {"v": "V6", "rpm": 178.0, "db": 43.3}], "rpmMin": 52.7, "rpmMax": 178.0, "dbMin": 20.9, "dbMax": 43.3, "nbVit": 6}, {"id": "1102DCR132", "marque": "Faro", "modele": "Nu", "P_min": 4.0, "P_max": 31.0, "vmoy_min": 0.34, "vmoy_max": 0.72, "ce_min": 1.84, "ce_max": 3.08, "diam": 132.0, "pales": 3, "dist": 0.31, "speeds": [{"v": "V1", "rpm": 107.3, "db": 26.9}, {"v": "V2", "rpm": 120.9, "db": 30.8}, {"v": "V3", "rpm": 146.2, "db": 35.9}, {"v": "V4", "rpm": 165.6, "db": 36.1}, {"v": "V5", "rpm": 190.5, "db": 39.9}, {"v": "V6", "rpm": 220.2, "db": 44.1}], "rpmMin": 107.3, "rpmMax": 220.2, "dbMin": 26.9, "dbMax": 44.1, "nbVit": 6}, {"id": "1103DCR142", "marque": "Faro", "modele": "Malvinas", "P_min": 29.0, "P_max": 75.0, "vmoy_min": 0.55, "vmoy_max": 0.91, "ce_min": 2.65, "ce_max": 3.41, "diam": 142.0, "pales": 4, "dist": 0.63, "speeds": [{"v": "V1", "rpm": 145.7, "db": 37.2}, {"v": "V2", "rpm": 189.4, "db": 46.3}, {"v": "V3", "rpm": 214.4, "db": 51.0}, {"v": "V4", "rpm": 226.9, "db": 53.5}, {"v": "V5", "rpm": 235.9, "db": 55.6}], "rpmMin": 145.7, "rpmMax": 235.9, "dbMin": 37.2, "dbMax": 55.6, "nbVit": 5}, {"id": "1201DCF132", "marque": "Fanelite", "modele": "ARATUA", "P_min": 5.0, "P_max": 34.0, "vmoy_min": 0.35, "vmoy_max": 0.69, "ce_min": 1.87, "ce_max": 3.01, "diam": 132.0, "pales": 3, "dist": 0.21, "speeds": [{"v": "V1", "rpm": 85.1, "db": 25.6}, {"v": "V2", "rpm": 103.0, "db": 33.0}, {"v": "V3", "rpm": 119.7, "db": 38.0}, {"v": "V4", "rpm": 133.8, "db": 38.1}, {"v": "V5", "rpm": 146.7, "db": 41.7}, {"v": "V6", "rpm": 166.8, "db": 43.9}], "rpmMin": 85.1, "rpmMax": 166.8, "dbMin": 25.6, "dbMax": 43.9, "nbVit": 6}, {"id": "1401ACR132", "marque": "Casafan", "modele": "Titanum", "P_min": 5.0, "P_max": 66.0, "vmoy_min": 0.18, "vmoy_max": 0.86, "ce_min": 0.6, "ce_max": 3.34, "diam": 132.0, "pales": 5, "dist": 0.26, "speeds": [{"v": "V1", "rpm": 68.3, "db": 25.2}, {"v": "V2", "rpm": 164.2, "db": 38.9}, {"v": "V3", "rpm": 265.9, "db": 55.1}], "rpmMin": 68.3, "rpmMax": 265.9, "dbMin": 25.2, "dbMax": 55.1, "nbVit": 3}, {"id": "1402DCF142", "marque": "CasaFan", "modele": "Eco Pallas", "P_min": 1.0, "P_max": 26.0, "vmoy_min": 0.06, "vmoy_max": 0.57, "ce_min": 0.0, "ce_max": 2.71, "diam": 142.0, "pales": 3, "dist": 0.26, "speeds": [{"v": "V1", "rpm": 30.0, "db": 25.9}, {"v": "V2", "rpm": 55.1, "db": 33.5}, {"v": "V3", "rpm": 78.8, "db": 39.1}, {"v": "V4", "rpm": 102.9, "db": 43.8}, {"v": "V5", "rpm": 127.4, "db": 47.6}, {"v": "V6", "rpm": 152.1, "db": 50.6}], "rpmMin": 30.0, "rpmMax": 152.1, "dbMin": 25.9, "dbMax": 50.6, "nbVit": 6}, {"id": "1403DCR152", "marque": "Casafan", "modele": "Eco genuino", "P_min": 3.0, "P_max": 17.0, "vmoy_min": 0.27, "vmoy_max": 0.85, "ce_min": 1.41, "ce_max": 3.3, "diam": 152.0, "pales": 5, "dist": 0.35, "speeds": [{"v": "V1", "rpm": 52.3, "db": 25.1}, {"v": "V2", "rpm": 60.7, "db": 25.2}, {"v": "V3", "rpm": 82.6, "db": 25.0}, {"v": "V4", "rpm": 101.8, "db": 25.7}, {"v": "V5", "rpm": 123.9, "db": 28.0}, {"v": "V6", "rpm": 155.0, "db": 32.3}], "rpmMin": 52.3, "rpmMax": 155.0, "dbMin": 25.0, "dbMax": 32.3, "nbVit": 6}, {"id": "1404DCF140", "marque": "Casafan", "modele": "Eco regento", "P_min": 1.0, "P_max": 26.0, "vmoy_min": 0.14, "vmoy_max": 0.73, "ce_min": 0.1, "ce_max": 3.08, "diam": 140.0, "pales": 3, "dist": 0.27, "speeds": [{"v": "V1", "rpm": 31.0, "db": 20.9}, {"v": "V2", "rpm": 52.0, "db": 21.1}, {"v": "V3", "rpm": 74.0, "db": 21.9}, {"v": "V4", "rpm": 96.0, "db": 24.9}, {"v": "V5", "rpm": 118.0, "db": 31.1}, {"v": "V6", "rpm": 138.0, "db": 36.2}], "rpmMin": 31.0, "rpmMax": 138.0, "dbMin": 20.9, "dbMax": 36.2, "nbVit": 6}, {"id": "1405ACF132", "marque": "Casafan", "modele": "Classic Flat III", "P_min": 25.0, "P_max": 25.0, "vmoy_min": 0.19, "vmoy_max": 0.59, "ce_min": 0.77, "ce_max": 2.78, "diam": 132.0, "pales": 5, "dist": 0.19, "speeds": [{"v": "V1", "rpm": 48.3, "db": 22.7}, {"v": "V2", "rpm": 88.8, "db": 30.9}, {"v": "V3", "rpm": 132.1, "db": 42.6}], "rpmMin": 48.3, "rpmMax": 132.1, "dbMin": 22.7, "dbMax": 42.6, "nbVit": 3}, {"id": "1501DCR100", "marque": "Leds C4", "modele": "Xaloc", "P_min": 6.0, "P_max": 6.0, "vmoy_min": 0.34, "vmoy_max": 0.58, "ce_min": 1.84, "ce_max": 2.75, "diam": 100.0, "pales": 3, "dist": 0.27, "speeds": [{"v": "V1", "rpm": 149.0, "db": 27.2}, {"v": "V2", "rpm": 179.0, "db": 32.9}, {"v": "V3", "rpm": 201.0, "db": 37.0}, {"v": "V4", "rpm": 220.0, "db": 40.0}, {"v": "V5", "rpm": 259.0, "db": 45.8}], "rpmMin": 149.0, "rpmMax": 259.0, "dbMin": 27.2, "dbMax": 45.8, "nbVit": 5}, {"id": "1601DCR152", "marque": "Anemoi", "modele": "Boreas", "P_min": 6.0, "P_max": 37.0, "vmoy_min": 0.48, "vmoy_max": 1.18, "ce_min": 2.44, "ce_max": 3.76, "diam": 152.0, "pales": 3, "dist": 0.29, "speeds": [{"v": "V1", "rpm": 98.0, "db": 23.3}, {"v": "V2", "rpm": 137.0, "db": 37.6}, {"v": "V3", "rpm": 159.0, "db": 43.7}, {"v": "V4", "rpm": 180.0, "db": 48.5}, {"v": "V5", "rpm": 194.0, "db": 51.2}, {"v": "V6", "rpm": 206.0, "db": 53.3}], "rpmMin": 98.0, "rpmMax": 206.0, "dbMin": 23.3, "dbMax": 53.3, "nbVit": 6}, {"id": "1602DCR132", "marque": "Anemoi", "modele": "Cefiro", "P_min": 5.0, "P_max": 35.0, "vmoy_min": 0.48, "vmoy_max": 1.15, "ce_min": 2.42, "ce_max": 3.73, "diam": 132.0, "pales": 3, "dist": 0.29, "speeds": [{"v": "V1", "rpm": 94.0, "db": 23.7}, {"v": "V2", "rpm": 129.0, "db": 36.4}, {"v": "V3", "rpm": 154.0, "db": 42.4}, {"v": "V4", "rpm": 177.0, "db": 47.2}, {"v": "V5", "rpm": 191.0, "db": 50.0}, {"v": "V6", "rpm": 204.0, "db": 52.0}], "rpmMin": 94.0, "rpmMax": 204.0, "dbMin": 23.7, "dbMax": 52.0, "nbVit": 6}, {"id": "1701DCR150", "marque": "LucciAIR", "modele": "Louisville", "P_min": 5.0, "P_max": 38.0, "vmoy_min": 0.57, "vmoy_max": 1.18, "ce_min": 2.7, "ce_max": 3.76, "diam": 150.0, "pales": 5, "dist": 0.29, "speeds": [{"v": "V1", "rpm": 85.0, "db": 27.4}, {"v": "V2", "rpm": 110.0, "db": 36.9}, {"v": "V3", "rpm": 127.0, "db": 41.5}, {"v": "V4", "rpm": 139.0, "db": 45.5}, {"v": "V5", "rpm": 150.0, "db": 48.1}, {"v": "V6", "rpm": 168.0, "db": 51.7}], "rpmMin": 85.0, "rpmMax": 168.0, "dbMin": 27.4, "dbMax": 51.7, "nbVit": 6}, {"id": "1801DCR132", "marque": "Wixled", "modele": "Hanoi", "P_min": 5.0, "P_max": 28.0, "vmoy_min": 0.54, "vmoy_max": 1.01, "ce_min": 2.62, "ce_max": 3.55, "diam": 132.0, "pales": 3, "dist": 0.3, "speeds": [{"v": "V1", "rpm": 99.0, "db": 29.3}, {"v": "V2", "rpm": 116.0, "db": 33.2}, {"v": "V3", "rpm": 130.0, "db": 37.0}, {"v": "V4", "rpm": 144.0, "db": 40.0}, {"v": "V5", "rpm": 168.0, "db": 45.4}, {"v": "V6", "rpm": 187.0, "db": 48.7}], "rpmMin": 99.0, "rpmMax": 187.0, "dbMin": 29.3, "dbMax": 48.7, "nbVit": 6}, {"id": "1803DCF132", "marque": "Wixled", "modele": "Bony", "P_min": 5.0, "P_max": 28.0, "vmoy_min": 0.34, "vmoy_max": 0.53, "ce_min": 1.83, "ce_max": 2.61, "diam": 132.0, "pales": 3, "dist": 0.19, "speeds": [{"v": "V1", "rpm": 108.0, "db": 27.4}, {"v": "V2", "rpm": 124.0, "db": 32.9}, {"v": "V3", "rpm": 137.0, "db": 36.8}, {"v": "V4", "rpm": 157.0, "db": 41.4}, {"v": "V5", "rpm": 180.0, "db": 46.5}, {"v": "V6", "rpm": 192.0, "db": 48.5}], "rpmMin": 108.0, "rpmMax": 192.0, "dbMin": 27.4, "dbMax": 48.5, "nbVit": 6}, {"id": "1802ACR132", "marque": "Wixled", "modele": "Taliou", "P_min": 15.0, "P_max": 56.0, "vmoy_min": 0.45, "vmoy_max": 0.93, "ce_min": 2.31, "ce_max": 3.55, "rpmMin": null, "rpmMax": null, "dbMin": null, "dbMax": null, "nbVit": 0, "diam": null, "pales": null, "dist": null}, {"marque": "RSOnline", "modele": "?", "id": "", "diam": 140.0, "pales": 3, "dist": 0.34, "speeds": [{"v": "V1", "rpm": 270.0, "db": 59.7}], "rpmMin": 270.0, "rpmMax": 270.0, "dbMin": 59.7, "dbMax": 59.7, "nbVit": 1}, {"id": "2101ACR122", "marque": "Wiltec", "modele": 65052, "P_min": 26.0, "P_max": 55.0, "vmoy_min": 0.44, "vmoy_max": 0.69, "ce_min": 2.29, "ce_max": 3.01, "diam": 122.0, "pales": 4, "dist": 0.26, "speeds": [{"v": "V1", "rpm": 118.0, "db": 37.7}, {"v": "V2", "rpm": 153.0, "db": 42.4}, {"v": "V3", "rpm": 189.0, "db": 46.7}], "rpmMin": 118.0, "rpmMax": 189.0, "dbMin": 37.7, "dbMax": 46.7, "nbVit": 3}, {"id": "2301ACR122", "marque": "Proficare", "modele": "PC-DVL-3071", "P_min": 59.0, "P_max": 63.0, "vmoy_min": 0.37, "vmoy_max": 0.76, "ce_min": 1.97, "ce_max": 3.14, "diam": 122.0, "pales": null, "dist": 0.23, "speeds": [{"v": "V1", "rpm": 142.0, "db": 41.6}, {"v": "V2", "rpm": 238.0, "db": 54.4}, {"v": "V3", "rpm": 283.0, "db": 59.3}], "rpmMin": 142.0, "rpmMax": 283.0, "dbMin": 41.6, "dbMax": 59.3, "nbVit": 3}, {"id": "2401DCR117", "marque": "Frabilamp", "modele": "Klod", "P_min": 4.0, "P_max": 28.0, "vmoy_min": 0.34, "vmoy_max": 0.73, "ce_min": 1.84, "ce_max": 3.09, "diam": 117.0, "pales": 4, "dist": 0.33, "speeds": [{"v": "V1", "rpm": 110.0, "db": 27.6}, {"v": "V2", "rpm": 130.0, "db": 32.6}, {"v": "V3", "rpm": 154.0, "db": 38.6}, {"v": "V4", "rpm": 175.0, "db": 42.5}, {"v": "V5", "rpm": 201.0, "db": 46.6}, {"v": "V6", "rpm": 233.0, "db": 51.9}], "rpmMin": 110.0, "rpmMax": 233.0, "dbMin": 27.6, "dbMax": 51.9, "nbVit": 6}];
+    let sortCol = 'marque';
+    let sortDir = 1;
+
+    (function() {
+        const marques = [...new Set(fans.map(f => f.marque).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+        const sel = document.getElementById('f_marque');
+        marques.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o); });
+    })();
+
+    function getFiltered() {
+        const fId     = document.getElementById('f_id').value.trim().toLowerCase();
+        const fMarque = document.getElementById('f_marque').value;
+        const fModele = document.getElementById('f_modele').value.toLowerCase().trim();
+        const fPales  = document.getElementById('f_pales').value;
+        const fDMin   = parseFloat(document.getElementById('f_diam_min').value) || -Infinity;
+        const fDMax   = parseFloat(document.getElementById('f_diam_max').value) || Infinity;
+        const fDiMin  = parseFloat(document.getElementById('f_dist_min').value) || -Infinity;
+        const fDiMax  = parseFloat(document.getElementById('f_dist_max').value) || Infinity;
+        const fVit    = document.getElementById('f_vitesses').value;
+        const fDbMax  = parseFloat(document.getElementById('f_dbmax').value) || Infinity;
+        const fRpmMax = parseFloat(document.getElementById('f_rpmmax').value) || Infinity;
+        const fPMax   = parseFloat(document.getElementById('f_pmax').value) || Infinity;
+        return fans.filter(f =>
+            (!fId     || (f.id||'').toLowerCase().includes(fId)) &&
+            (!fMarque || f.marque === fMarque) &&
+            (!fModele || (f.modele||'').toLowerCase().includes(fModele)) &&
+            (!fPales  || f.pales === parseInt(fPales)) &&
+            ((f.diam||0) >= fDMin && (f.diam||0) <= fDMax) &&
+            ((f.dist||0) >= fDiMin && (f.dist||0) <= fDiMax) &&
+            (!fVit    || f.nbVit === parseInt(fVit)) &&
+            ((f.dbMax||0) <= fDbMax) &&
+            ((f.rpmMax||0) <= fRpmMax) &&
+            ((f.P_max||0) <= fPMax)
+        );
+    }
+
+    function dbClass(v){ if(v==null) return ''; return v<=30?'db-low':v<=45?'db-mid':'db-high'; }
+    function fmt(v){ if(v===undefined||v===null||v===''||isNaN(v)) return '<span class="na">—</span>'; return '<span class="num">'+v+'</span>'; }
+
+    function renderTable() {
+        const data = getFiltered();
+        data.sort((a,b) => {
+            let va = a[sortCol], vb = b[sortCol];
+            if (va == null) va = sortCol==='marque'||sortCol==='modele'||sortCol==='id' ? 'zzz' : -Infinity;
+            if (vb == null) vb = sortCol==='marque'||sortCol==='modele'||sortCol==='id' ? 'zzz' : -Infinity;
+            if (typeof va === 'string') return va.localeCompare(vb,'fr') * sortDir;
+            return (va - vb) * sortDir;
+        });
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+        data.forEach((f, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td>' + (idx+1) + '</td>' +
+                '<td class="id-cell">' + (f.id||'<span class="na">—</span>') + '</td>' +
+                '<td style="text-align:left">' + (f.marque||'<span class="na">—</span>') + '</td>' +
+                '<td style="text-align:left">' + (f.modele||'<span class="na">—</span>') + '</td>' +
+                '<td>' + fmt(f.pales) + '</td>' +
+                '<td>' + fmt(f.diam) + '</td>' +
+                '<td>' + (f.dist!=null ? f.dist.toFixed(2) : '<span class="na">—</span>') + '</td>' +
+                '<td>' + f.nbVit + '</td>' +
+                '<td>' + fmt(f.rpmMin!=null?f.rpmMin.toFixed(1):null) + '</td>' +
+                '<td>' + fmt(f.rpmMax!=null?f.rpmMax.toFixed(1):null) + '</td>' +
+                '<td class="' + dbClass(f.dbMin) + '">' + fmt(f.dbMin!=null?f.dbMin.toFixed(1):null) + '</td>' +
+                '<td class="' + dbClass(f.dbMax) + '">' + fmt(f.dbMax!=null?f.dbMax.toFixed(1):null) + '</td>' +
+                '<td>' + fmt(f.P_min) + '</td>' +
+                '<td>' + fmt(f.P_max) + '</td>' +
+                '<td>' + fmt(f.vmoy_min) + '</td>' +
+                '<td>' + fmt(f.vmoy_max) + '</td>' +
+                '<td>' + fmt(f.ce_min) + '</td>' +
+                '<td>' + fmt(f.ce_max) + '</td>' +
+                '<td>' + (f.speeds&&f.speeds.length ? '<span class="toggle-detail" onclick="toggleDetail('+idx+',this)">' + (window.I18n.lang === 'fr' ? 'Voir détails' : 'Details') + '</span>' : '<span class="na">—</span>') + '</td>';
+            tbody.appendChild(tr);
+            const dr = document.createElement('tr');
+            dr.className = 'detail-row'; dr.id = 'detail-'+idx; dr.style.display = 'none';
+            let sr = (f.speeds||[]).map((s,i) => '<tr><td>V'+(i+1)+'</td><td>'+(s.rpm!=null?s.rpm.toFixed(1):'—')+'</td><td class="'+dbClass(s.db)+'">'+(s.db!=null?s.db.toFixed(1):'—')+'</td></tr>').join('');
+            dr.innerHTML = '<td colspan="19"><table class="speed-table"><thead><tr><th>' + (window.I18n.lang === 'fr' ? 'Vitesse' : 'Speed') + '</th><th>' + (window.I18n.lang === 'fr' ? 'RPM (tour/min)' : 'RPM (rotations/min)') + '</th><th>' + (window.I18n.lang === 'fr' ? 'Niveau de puissance dB(A)' : 'Sound power level dB(A)') + '</th></tr></thead><tbody>'+sr+'</tbody></table></td>';
+            tbody.appendChild(dr);
+        });
+        document.getElementById('stat_count').textContent = data.length;
+        document.getElementById('stat_total').textContent = fans.length;
+        document.querySelectorAll('thead th[data-col]').forEach(th => {
+            th.classList.remove('sorted-asc','sorted-desc');
+            if (th.dataset.col === sortCol) th.classList.add(sortDir===1?'sorted-asc':'sorted-desc');
+        });
+    }
+
+    function toggleDetail(idx, el) {
+        const dr = document.getElementById('detail-'+idx);
+        if (dr.style.display === 'none') {
+            dr.style.display = '';
+            el.textContent = window.I18n.lang === 'fr' ? 'Masquer' : 'Hide';
+        } else {
+            dr.style.display = 'none';
+            el.textContent = window.I18n.lang === 'fr' ? 'Voir détails' : 'Details';
+        }
+    }
+
+    document.querySelectorAll('thead th[data-col]').forEach(th => {
+        th.addEventListener('click', () => {
+            if (sortCol === th.dataset.col) sortDir *= -1;
+            else { sortCol = th.dataset.col; sortDir = 1; }
+            renderTable();
+        });
+    });
+
+    function resetFilters() {
+        document.querySelectorAll('#filters select, #filters input').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = '';
+        });
+        renderTable();
+    }
+
+    document.querySelectorAll('#filters select, #filters input').forEach(el => {
+        el.addEventListener('input', renderTable);
+        el.addEventListener('change', renderTable);
+    });
+
+    renderTable();
+
+    // ===== Theme toggle (matching index.html / givoni.html) =====
+    (function() {
+        const themeBtn = document.getElementById('theme-toggle');
+        const icon = themeBtn ? themeBtn.querySelector('.theme-icon') : null;
+
+        const savedTheme = localStorage.getItem('brasse-theme');
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if (icon) icon.textContent = '☀️';
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            if (icon) icon.textContent = '🌙';
+        }
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                if (isLight) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('brasse-theme', 'dark');
+                    if (icon) icon.textContent = '🌙';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('brasse-theme', 'light');
+                    if (icon) icon.textContent = '☀️';
+                }
+            });
+        }
+
+        // Initialize I18n translation engine
+        window.I18n.init();
+        window.addEventListener('languagechange', () => {
+            renderTable();
+        });
+
+        // Logo spin
+        const logo = document.querySelector('.logo-icon img');
+        if (logo) {
+            logo.addEventListener('mouseenter', () => { logo.style.animation = 'spin-slow 2s linear infinite'; });
+            logo.addEventListener('mouseleave', () => { logo.style.animation = 'none'; });
+        }
+    })();
+    </script>
+</body>
+</html>

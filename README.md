@@ -74,10 +74,13 @@ Navigateurs conseillés : versions récentes de Chrome, Edge ou Firefox.
 ## Structure du projet
 
 ```text
-app.js        logique de calcul et interactions UI
-index.html    structure de l'application
-styles.css    styles et animations
-fan.svg       icône du ventilateur du header
+index.html         structure de l'outil calepinage (page d'accueil)
+app.js             logique de calcul et interactions UI de la page d'accueil
+givoni.html        page pédagogique interactive du Diagramme de Givoni
+comparatif.html    page de comparaison des performances de 48 brasseurs d'air (BRASSE II)
+i18n.js            moteur et dictionnaire de traduction (FR/EN) et de gestion des unités
+styles.css         styles CSS et animations globales du projet
+fan.svg            icône vectorielle animée du ventilateur du header
 ```
 
 ## Références et crédits
@@ -118,6 +121,12 @@ Consulter le fichier [LICENSE](LICENSE) pour le texte complet de la licence.
 Cette licence est cohérente avec un projet open source destiné à être diffusé largement, y compris lorsqu'il est utilisé au travers d'un service en ligne.
 
 ## Historique
+
+### [0.9.5] - 2026-06-19
+
+- Ajout de la page `comparatif.html` présentant un tableau comparatif détaillé des 48 brasseurs d'air plafonniers testés dans le cadre du projet BRASSE II.
+- Intégration de cette nouvelle page dans le menu de navigation (header controls) sur toutes les pages du site (`index.html`, `givoni.html`, `comparatif.html`).
+- Traduction intégrale bilingue (FR/EN) de la page de comparaison (titres, méta descriptions, filtres de recherche, tableaux et popups de détails) avec le moteur `i18n.js`.
 
 ### [0.9.4] - 2026-06-19
 
